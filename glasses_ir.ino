@@ -1,5 +1,8 @@
 String cur_state = "None";
 
+// indicates whether a gesture has been detected
+bool start_counting = false;
+// time/#loops (after first gesture) allowed before outputting detected gestures (max# = movements_per_state)
 int time_count = 0;
 const int time_to_process_state = 10;
   
@@ -27,52 +30,57 @@ void setup_ir() {
   // Default is 80
   //APDS.setGestureSensitivity(80);
 
-  Serial.println("Detecting gestures ...");
+  //Serial.println("Detecting gestures ...");
   Serial.println(cur_state);
   IR_command_given = 0;
 }
 void IR_gesture_check() {
   if (movements_idx < movements_per_state) {
       if (APDS.gestureAvailable()) {
-      // a gesture was detected, read and print to serial monitor
-      int gesture = APDS.readGesture();
-      
-      switch (gesture) {
-        case GESTURE_UP:
-          movements[movements_idx] = "BACK";
-          movements_idx += 1;
-          Serial.println("gesture back");
-          break;
-  
-        case GESTURE_DOWN:
-          movements[movements_idx] = "FRONT";
-          movements_idx += 1;
-          Serial.println("gesture frnt");
-          break;
-  
-        case GESTURE_LEFT:
-          movements[movements_idx] = "UP";
-          movements_idx += 1;
-          Serial.println("gesture up");
-          break;
-  
-        case GESTURE_RIGHT:
-          movements[movements_idx] = "DOWN";
-          movements_idx += 1;
-          Serial.println("gesture down");
-          break;
-  
-        default:
-          // ignore
-          Serial.println("no gesture");
-          break;
-      }
+        // a gesture was detected, read and print to serial monitor
+        int gesture = APDS.readGesture();
+        
+        switch (gesture) {
+          case GESTURE_UP:
+            movements[movements_idx] = "BACK";
+            movements_idx += 1;
+            Serial.println("gesture back");
+            start_counting = true;
+            break;
+    
+          case GESTURE_DOWN:
+            movements[movements_idx] = "FRONT";
+            movements_idx += 1;
+            Serial.println("gesture frnt");
+            start_counting = true;
+            break;
+    
+          case GESTURE_LEFT:
+            movements[movements_idx] = "UP";
+            movements_idx += 1;
+            Serial.println("gesture up");
+            start_counting = true;
+            break;
+    
+          case GESTURE_RIGHT:
+            movements[movements_idx] = "DOWN";
+            movements_idx += 1;
+            Serial.println("gesture down");
+            start_counting = true;
+            break;
+    
+          default:
+            // ignore
+            Serial.println("no gesture");
+            break;
+        }
     }
   }
-  // every 1000 loops, we print whatever movements (max amt: movements_per_state) we sensed => state/command indicated
+  // Up to (time_to_process_state-1) loops after we detect the first gesture, we print whatever movements (max amt: movements_per_state) we sensed => state/command indicated
   if (time_count == time_to_process_state || movements_idx == movements_per_state) {
     time_count = 0;
-
+    start_counting = false;
+    
     if (movements_idx == 0) {
       cur_state = "None";  
     } else {
@@ -86,12 +94,12 @@ void IR_gesture_check() {
     }
     
     Serial.println(cur_state);
-    if (cur_state != "None") {
-      IR_command_given = 1;
-      cur_state = "None";
-    }    
-
+    IR_command_given = 1;
+    
+    cur_state = "None";
     movements_idx = 0;
   }
-  time_count += 1;
+  if (start_counting) {
+    time_count += 1;
+  }
 }
