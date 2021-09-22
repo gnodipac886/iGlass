@@ -2,14 +2,16 @@ String cur_state = "None";
 
 // indicates whether a gesture has been detected
 bool start_counting = false;
-// time/#loops (after first gesture) allowed before outputting detected gestures (max# = movements_per_state)
-int time_count = 0;
-const int time_to_process_state = 10;
+
   
 const byte movements_per_state = 3;
 // record of movements detected over time_to_process_state loops
 String movements[movements_per_state];         
 byte movements_idx = 0;
+
+// time/#loops (after first gesture) allowed before outputting detected gestures (max# = movements_per_state)
+int time_count = 0;
+const int time_to_process_state = 210*movements_per_state;
 
 #include <Arduino_APDS9960.h>
 
@@ -44,34 +46,34 @@ void IR_gesture_check() {
           case GESTURE_UP:
             movements[movements_idx] = "BACK";
             movements_idx += 1;
-            Serial.println("gesture back");
+            // Serial.println("gesture back");
             start_counting = true;
             break;
     
           case GESTURE_DOWN:
             movements[movements_idx] = "FRONT";
             movements_idx += 1;
-            Serial.println("gesture frnt");
+            // Serial.println("gesture frnt");
             start_counting = true;
             break;
     
           case GESTURE_LEFT:
             movements[movements_idx] = "UP";
             movements_idx += 1;
-            Serial.println("gesture up");
+            // Serial.println("gesture up");
             start_counting = true;
             break;
     
           case GESTURE_RIGHT:
             movements[movements_idx] = "DOWN";
             movements_idx += 1;
-            Serial.println("gesture down");
+            // Serial.println("gesture down");
             start_counting = true;
             break;
     
           default:
             // ignore
-            Serial.println("no gesture");
+            // Serial.println("no gesture");
             break;
         }
     }
