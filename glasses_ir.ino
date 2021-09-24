@@ -44,28 +44,28 @@ void IR_gesture_check() {
         
         switch (gesture) {
           case GESTURE_UP:
-            movements[movements_idx] = "BACK";
+            movements[movements_idx] = "B";   //back
             movements_idx += 1;
             // Serial.println("gesture back");
             start_counting = true;
             break;
     
           case GESTURE_DOWN:
-            movements[movements_idx] = "FRONT";
+            movements[movements_idx] = "F";   //front
             movements_idx += 1;
             // Serial.println("gesture frnt");
             start_counting = true;
             break;
     
           case GESTURE_LEFT:
-            movements[movements_idx] = "UP";
+            movements[movements_idx] = "U";   //up
             movements_idx += 1;
             // Serial.println("gesture up");
             start_counting = true;
             break;
     
           case GESTURE_RIGHT:
-            movements[movements_idx] = "DOWN";
+            movements[movements_idx] = "D";   //down
             movements_idx += 1;
             // Serial.println("gesture down");
             start_counting = true;
@@ -96,6 +96,7 @@ void IR_gesture_check() {
     }
     
     Serial.println(cur_state);
+    IR_command = cur_state;
     IR_command_given = 1;
     
     cur_state = "None";

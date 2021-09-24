@@ -24,6 +24,11 @@ const uint8_t SD_CS_PIN = SDCARD_SS_PIN;
 #define SD_CONFIG SdSpiConfig(SD_CS_PIN, SHARED_SPI, SPI_CLOCK)
 #endif  // HAS_SDIO_CLASSs
 
+
+//IR Commands
+const String WRITE_SD = "F";
+const String STOP_WRITE_SD = "B";
+
 /****************Global Variables***************/
 
 // sd card variables
@@ -68,10 +73,14 @@ int imu_buf_idx = 0;
 
 
 // IR variables
-volatile int IR_command_given = 0;
+int IR_command_given = 0;
+String IR_command = "";
 
 // others
 volatile int setup_complete, int_mic, int_imu = 0;
+
+//Flags
+char SD_WRITE_FLAG = 0;
 /***********************************************/
 
 void setup() {
@@ -81,25 +90,30 @@ void setup() {
 	}
 
   pinMode(LED_BUILTIN, OUTPUT);
-//	setup_sd_card();
-//	setup_mic();
-//	setup_imu();
-  setup_ir();
+    setup_imu();
+    setup_mic();
+    setup_ir();
 
 	setup_complete = 1;
 }
 
 void loop() {
   IR_gesture_check();
-	if(!card_present && setup_complete && IR_command_given){        // I added an ! in front of card_present
-		save_mic_data();
+	if(!card_present && setup_complete && IR_command_given){        // I added an ! in front of card_present ................. also check logic!!!
 		update_IMU();
     IR_command_given = 0;
-    //digitalWrite(LED_BUILTIN, HIGH);   // turn the LED on (HIGH is the voltage level)
-    //delay(1000);                       // wait for 1 seconds
-    //digitalWrite(LED_BUILTIN, LOW);    // turn the LED off by making the voltage LOW
+    //Process IR_commands
+    if (IR_command == WRITE_SD) {
+        SD_WRITE_FLAG = 1;
+        setup_sd_card();     
+    } else if (IR_command == STOP_WRITE_SD) {
+        SD_WRITE_FLAG = 0;
+        mic_file.close();
+        imu_file.close();
+        Serial.println("done saving data to sd file");
+    }
+    
 	} else if(card_present && !setup_complete){
-		mic_file = SD.open(mic_fname, O_WRITE | O_CREAT);
 		imu_file = SD.open(imu_fname, O_WRITE | O_CREAT);
 		setup_complete = 1;
     	delay(100);
@@ -107,4 +121,17 @@ void loop() {
 		//Serial.println("SD card not present");
 		//delay(250);
 	}
+
+  if (SD_WRITE_FLAG == 1) {
+    if(mic_file) {
+        save_mic_data();
+    } else {
+        Serial.print("error opening mic_data file");
+    }
+    if(imu_file) {
+        update_IMU();
+    } else {
+        Serial.print("error opening imu_data file");
+    }
+  }
 }
