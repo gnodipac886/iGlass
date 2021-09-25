@@ -1,4 +1,4 @@
-#include <SdFat.h>
+//#include <SdFat.h>
 #include <Arduino_LSM9DS1.h>
 
 void setup_imu() {
@@ -7,10 +7,18 @@ void setup_imu() {
 		while (!Serial);
 	}
 
-	if (!IMU.begin()) {
+	if(!imu_setup_flag){
+		if (!IMU.begin()) {
 		Serial.println("Failed to initialize IMU!");
 		while (1);
 	}
+	}
+	imu_setup_flag = 1;
+}
+
+void end_imu() {
+	IMU.end();
+	imu_setup_flag = 0;
 }
 
 void save_imu_data(){

@@ -1,4 +1,4 @@
-String cur_state = "None";
+String cur_state = "No gesture";
 
 // indicates whether a gesture has been detected
 bool start_counting = false;
@@ -36,6 +36,11 @@ void setup_ir() {
   Serial.println(cur_state);
   IR_command_given = 0;
 }
+
+void end_ir() {
+  APDS.end();
+}
+
 void IR_gesture_check() {
   if (movements_idx < movements_per_state) {
       if (APDS.gestureAvailable()) {
@@ -84,7 +89,7 @@ void IR_gesture_check() {
     start_counting = false;
     
     if (movements_idx == 0) {
-      cur_state = "None";  
+      cur_state = "No gesture";  
     } else {
       cur_state = movements[0];
       movements[0] = "";
@@ -99,7 +104,7 @@ void IR_gesture_check() {
     IR_command = cur_state;
     IR_command_given = 1;
     
-    cur_state = "None";
+    cur_state = "No gesture";
     movements_idx = 0;
   }
   if (start_counting) {
