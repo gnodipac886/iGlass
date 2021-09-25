@@ -26,10 +26,12 @@ const uint8_t SD_CS_PIN = SDCARD_SS_PIN;
 
 
 //IR Commands
-#define GES_WRITE_SD 		    0     //F
-#define GES_STOP_WRITE_SD 		1     //B
-#define GES_SLEEP 			    2     //U
-#define GES_WAKE 			    3     //D
+#define GES_WRITE_SD 		    1     	//F
+#define GES_STOP_WRITE_SD 		2     	//B
+#define GES_SLEEP 			    3     	//U
+#define GES_WAKE 			    4     	//D
+#define GES_BLE_START			12		//FB
+#define GES_BLE_STOP			21		//BF
 
 /****************Global Variables***************/
 
@@ -75,14 +77,14 @@ const uint8_t SD_CS_PIN = SDCARD_SS_PIN;
 
 // IR variables
 	int IR_command_given = 0;
-	String IR_command = "";
+	int IR_command = -1;
 
 // others
 	volatile int setup_complete, int_mic, int_imu = 0;
 
 //Flags
 	char SD_WRITE_FLAG = 0;
-	int mic_setup_flag, imu_setup_flag, sd_setup_flag = 0;
+	int mic_setup_flag, imu_setup_flag, sd_setup_flag, ble_setup_flag = 0;
 /***********************************************/
 
 void setup() {
@@ -106,7 +108,7 @@ void loop() {
 		//update_IMU();
 		IR_command_given = 0;
 		//Process IR_commands
-		switch(get_ges_num(IR_command)) {
+		switch(IR_command) {
 			case GES_WRITE_SD:
 				write_sd_handler(); 
 				break;
@@ -123,10 +125,18 @@ void loop() {
 				go_to_sleep_handler();
 				break;
 
+			case GES_BLE_START:
+				ble_start_handler();					//flag + update ble function
+				break;
+
+			case GES_BLE_STOP:
+				ble_end_handler();
+				break;
+
 			default:
 				break;
     	}
-        IR_command = "";
+        IR_command = -1;
 	} else if(card_present && !setup_complete){
 		imu_file = SD.open(imu_fname, O_WRITE | O_CREAT);
 		setup_complete = 1;
@@ -147,5 +157,9 @@ void loop() {
 		} else {
 			Serial.println("error opening imu_data file");
 		}
+	}
+
+	if (ble_setup_flag == 1) {
+		update_ble();
 	}
 }

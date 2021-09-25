@@ -33,6 +33,17 @@ void go_to_sleep_handler() {
     end_imu();
 }
 
+void ble_start_handler() {
+    Serial.println("Starting BLE...");
+    ble_setup();
+    Serial.println("BLE setup complete");
+}
+
+void ble_end_handler() {
+    Serial.println("Ending BLE...");
+    ble_end();
+    Serial.println("BLE ended");
+}
 
 int get_ges_num(String gesture) {
     int value = 0;
