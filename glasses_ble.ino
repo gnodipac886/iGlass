@@ -37,6 +37,7 @@ BLECharacteristic MICCharacteristic( BLE_UUID_MIC, BLERead | BLENotify , MIC_BUF
 float ble_ax, ble_ay, ble_az, ble_wx, ble_wy, ble_wz, ble_mx, ble_my, ble_mz;
 float barometricPressure, temperature, humidity;
 int proximity, gesture, colorR, colorG, colorB;
+int CENTRAL_FLAG = 0;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Sensor buffers
@@ -137,27 +138,25 @@ void setup_TMP(){
 
 void ble_setup(){
   if (!ble_setup_flag) {
-	pinMode( BLE_LED_PIN, OUTPUT );
-	pinMode( RSSI_LED_PIN, OUTPUT );
+    pinMode( BLE_LED_PIN, OUTPUT );
+    pinMode( RSSI_LED_PIN, OUTPUT );
 
-	// for power savings we can turn sensors on only when a central connects
-	setup_imu();
-	// setup_mic();
-	setup_CLR();
-	setup_TMP();
+    // for power savings we can turn sensors on only when a central connects
+    setup_imu();
+    // setup_mic();
+    setup_CLR();
+    setup_TMP();
 
-	Serial.print( "Accelerometer sample rate = " );
-	Serial.print( IMU.accelerationSampleRate() );
-	Serial.println( " Hz" );
+    Serial.print( "Accelerometer sample rate = " );
+    Serial.print( IMU.accelerationSampleRate() );
+    Serial.println( " Hz" );
 
-	if( setupBleMode() ){
-		digitalWrite( BLE_LED_PIN, HIGH );
-	}
-
-	// listen for BLE peripherals to connect:
-	central = BLE.central();
+    if( setupBleMode() ){
+      digitalWrite( BLE_LED_PIN, HIGH );
+    }
   }
-
+  //rgb
+  rgb_setColor(0,0,255);
   ble_setup_flag = 1;
 }
 
@@ -252,25 +251,32 @@ void update_ble(){
 //   // listen for BLE peripherals to connect:
 //   BLEDevice central = BLE.central();
 
-  if ( central ){
+  // listen for BLE peripherals to connect:
+  if(!CENTRAL_FLAG){
+    central = BLE.central();
+    if(central)
+      CENTRAL_FLAG = 1;
+  }
+
+  if ( CENTRAL_FLAG ){
     Serial.print( "Connected to central: " );
     Serial.println( central.address() );
 
     while ( central.connected() ){
-     ble_update_IMU();
-     ble_update_TMP();
+      ble_update_IMU();
+      ble_update_TMP();
       ble_update_CLR();
-     
-     long interval = 100;
-     unsigned long currentMillis = millis();
-     if( currentMillis - previousMillis > interval && central.connected()){
-       previousMillis = currentMillis;
-       
-       	ble_send_IMU();
-       	ble_send_TMP();
-    	ble_send_CLR();
-     }
-	 break;
+      
+      long interval = 100;
+      unsigned long currentMillis = millis();
+      if( currentMillis - previousMillis > interval && central.connected()){
+        previousMillis = currentMillis;
+        
+          ble_send_IMU();
+          ble_send_TMP();
+          ble_send_CLR();
+      }
+	    break;
     }
 
     // Serial.print( F( "Disconnected from central: " ) );
@@ -284,5 +290,7 @@ void update_ble(){
 
 void ble_end() {
 	BLE.end();
+  //rgb
+  rgb_off();
 	ble_setup_flag = 0;
 }

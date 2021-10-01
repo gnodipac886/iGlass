@@ -10,6 +10,8 @@ void stop_write_sd_handler() {
     mic_file.close();
     imu_file.close();
     Serial.println("done saving data to sd file");
+    //rgb
+    rgb_off();
     go_to_sleep_handler();
 }
 

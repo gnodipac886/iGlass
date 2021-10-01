@@ -31,6 +31,8 @@ void setup_sd_card(){
 	sd_setup_flag = 1;
 	mic_file = SD.open(mic_fname, O_WRITE | O_CREAT);
 	imu_file = SD.open(imu_fname, O_WRITE | O_CREAT);
+	//rgb
+	rgb_setColor(255,0,0);
 
 	card_present = digitalRead(chip_detect);
 

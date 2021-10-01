@@ -94,8 +94,8 @@ void setup() {
 	}
 
   	pinMode(LED_BUILTIN, OUTPUT);
-    //setup_imu();
-    //setup_mic();
+
+	setup_rgb();
     setup_ir();
 	setup_sd_card();
 	attachInterrupt(digitalPinToInterrupt(chip_detect), card_detect, CHANGE);
@@ -161,5 +161,9 @@ void loop() {
 
 	if (ble_setup_flag == 1) {
 		update_ble();
+	}
+	//rgb
+	if (SD_WRITE_FLAG == 1 || ble_setup_flag == 1) {
+		update_rgb();
 	}
 }
