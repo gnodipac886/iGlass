@@ -3,10 +3,12 @@
 #include <hal/nrf_pdm.h>
 
 void setup_mic() {
+	#if DEBUG
 	if (!Serial) {
 		Serial.begin(115200);
 		while (!Serial);
 	}
+	#endif
 
 	// Configure the data receive callback
 	PDM.onReceive(onPDMdata);
@@ -20,8 +22,10 @@ void setup_mic() {
 
 	if(!mic_setup_flag){
 		if (!PDM.begin(channels, frequency)) {
-		Serial.println("Failed to start PDM!");
-		while (1);
+			#if DEBUG
+			Serial.println("Failed to start PDM!");
+			#endif
+			while (1);
 		}
 	}
 
@@ -44,12 +48,16 @@ void save_mic_data() {
 	//    NVIC_EnableIRQ(PDM_IRQn);
 	//    Serial.println("Bytes: " + String(PDM_BUF_SIZE * pdm_sample_size));
 		if(int_mic){
-		Serial.println("mic int");
+			#if DEBUG
+			Serial.println("mic int");
+			#endif
 		}
 		if (++mic_flush_counter == 10) {
-		mic_flush_counter = 0;
-		mic_file.flush();
-		Serial.println("flushed!");
+			mic_flush_counter = 0;
+			mic_file.flush();
+			#if DEBUG
+			Serial.println("flushed!");
+			#endif
 		}
 		//		Serial.println("B/s: " + String(float(PDM_BUF_SIZE) / (float(micros() - start) / 1000000.0)));
 

@@ -5,6 +5,8 @@
 #define PDM_BUF_SIZE 1024 * 16
 #define IMU_BUF_SIZE 1024 * 9
 
+#define DEBUG 0
+
 #ifndef SDCARD_SS_PIN
 const uint8_t SD_CS_PIN = SS;
 #else  // SDCARD_SS_PIN
@@ -88,23 +90,25 @@ const uint8_t SD_CS_PIN = SDCARD_SS_PIN;
 /***********************************************/
 
 void setup() {
+	#if DEBUG
 	if(!Serial){
 		Serial.begin(115200);
-		while (!Serial);
+		// while (!Serial);
 	}
+	#endif
 
   	pinMode(LED_BUILTIN, OUTPUT);
 
 	setup_rgb();
     setup_ir();
-	setup_sd_card();
-	attachInterrupt(digitalPinToInterrupt(chip_detect), card_detect, CHANGE);
+	// setup_sd_card();
+	// attachInterrupt(digitalPinToInterrupt(chip_detect), card_detect, CHANGE);
 	setup_complete = 1;
 }
 
 void loop() {
   	IR_gesture_check();
-	if(card_present && setup_complete && IR_command_given){    
+	if(setup_complete && IR_command_given){    
 		//update_IMU();
 		IR_command_given = 0;
 		//Process IR_commands
@@ -150,12 +154,16 @@ void loop() {
 		if(mic_file) {
 			save_mic_data();
 		} else {
+			#if DEBUG
 			Serial.println("error opening mic_data file");
+			#endif
 		}
 		if(imu_file) {
 			update_IMU();
 		} else {
+			#if DEBUG
 			Serial.println("error opening imu_data file");
+			#endif
 		}
 	}
 

@@ -22,13 +22,17 @@ const int time_to_process_state = 210*movements_per_state;
 #include <Arduino_APDS9960.h>
 
 void setup_ir() {
+  #if DEBUG
   if(!Serial){
     Serial.begin(115200);
-    while (!Serial);
+    // while (!Serial);
   }
+  #endif
 
   if (!APDS.begin()) {
+    #if DEBUG
     Serial.println("Error initializing APDS9960 sensor!");
+    #endif
   }
 
   // for setGestureSensitivity(..) a value between 1 and 100 is required.
@@ -39,7 +43,9 @@ void setup_ir() {
   //APDS.setGestureSensitivity(80);
 
   //Serial.println("Detecting gestures ...");
+  #if DEBUG
   Serial.println(String(cur_state));
+  #endif
   IR_command_given = 0;
 }
 
@@ -109,7 +115,9 @@ void IR_gesture_check() {
       }
     }
     
+    #if DEBUG
     Serial.println(cur_state);
+    #endif
     IR_command = cur_state;
     IR_command_given = 1;
     
