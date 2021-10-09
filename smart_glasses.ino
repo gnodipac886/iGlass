@@ -101,14 +101,14 @@ void setup() {
 
 	setup_rgb();
     setup_ir();
-	// setup_sd_card();
-	// attachInterrupt(digitalPinToInterrupt(chip_detect), card_detect, CHANGE);
+	 setup_sd_card();
+	 attachInterrupt(digitalPinToInterrupt(chip_detect), card_detect, CHANGE);
 	setup_complete = 1;
 }
 
 void loop() {
   	IR_gesture_check();
-	if(setup_complete && IR_command_given){    
+	if(card_present && setup_complete && IR_command_given){    
 		//update_IMU();
 		IR_command_given = 0;
 		//Process IR_commands
