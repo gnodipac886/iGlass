@@ -259,8 +259,8 @@ void update_ble(){
   }
 
   if ( CENTRAL_FLAG ){
-    Serial.print( "Connected to central: " );
-    Serial.println( central.address() );
+    // Serial.print( "Connected to central: " );
+    // Serial.println( central.address() );
 
     while ( central.connected() ){
       ble_update_IMU();

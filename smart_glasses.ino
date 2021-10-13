@@ -6,6 +6,8 @@
 #define PDM_BUF_SIZE 1024 * 16
 #define IMU_BUF_SIZE 1024 * 9
 
+#define DEBUG 0
+
 #ifndef SDCARD_SS_PIN
 const uint8_t SD_CS_PIN = SS;
 #else  // SDCARD_SS_PIN
@@ -90,10 +92,12 @@ const uint8_t SD_CS_PIN = SDCARD_SS_PIN;
 /***********************************************/
 
 void setup() {
-  	if(!Serial){
-  		Serial.begin(115200);
-  		while (!Serial);
-  	}
+	#if DEBUG
+	if(!Serial){
+		Serial.begin(115200);
+		// while (!Serial);
+	}
+	#endif
 
     pinMode(LED_BUILTIN, OUTPUT);
   	setup_rgb();
@@ -149,16 +153,20 @@ void loop() {
 		//delay(250);
 	}
 
-	if (SD_WRITE_FLAG == 1) {W
+	if (SD_WRITE_FLAG == 1) {
 		if(mic_file) {
 			save_mic_data();
 		} else {
+			#if DEBUG
 			Serial.println("error opening mic_data file");
+			#endif
 		}
 		if(imu_file) {
 			update_IMU();
 		} else {
+			#if DEBUG
 			Serial.println("error opening imu_data file");
+			#endif
 		}
 	}
 
@@ -168,8 +176,6 @@ void loop() {
 	}
 	//rgb
 	if (SD_WRITE_FLAG == 1 || ble_setup_flag == 1) {
-    //Serial.println("updating rgb!!!");
-		//rgb_timer.update();
     if (millis()- rgb_timer >= 40) {
       update_rgb();
       rgb_timer = millis();

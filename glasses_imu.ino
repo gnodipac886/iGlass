@@ -3,16 +3,20 @@
 
 void setup_imu() {
   if (imu_setup_flag == 1) {return;}
+	#if DEBUG
 	if(!Serial){
 		Serial.begin(115200);
 		while (!Serial);
 	}
+	#endif
 
 	if(!imu_setup_flag){
 		if (!IMU.begin()) {
-		Serial.println("Failed to initialize IMU!");
-		while (1);
-	}
+			#if DEBUG
+			Serial.println("Failed to initialize IMU!");
+			#endif
+			while (1);
+		}
 	}
 	imu_setup_flag = 1;
 }
@@ -30,8 +34,10 @@ void save_imu_data(){
 	imu_file.write((byte*)imu_sampleBuffer, (size_t)IMU_BUF_SIZE);
 	imu_file.flush();
 	if(int_imu){
-      Serial.println("imu int");
-  }
+		#if DEBUG
+	    Serial.println("imu int");
+	    #endif
+  	}
 }
 
 void update_IMU() {
@@ -54,7 +60,9 @@ void update_IMU() {
 		memcpy(&imu_sampleBuffer[imu_buf_idx], temp_data, sizeof(float) * 9);
 		imu_buf_idx += 9;
 		if(imu_buf_idx == IMU_BUF_SIZE){
+			#if DEBUG
 			Serial.println("saving IMU data");
+			#endif
 			save_imu_data();
 			imu_buf_idx = 0;
 		}
@@ -62,7 +70,9 @@ void update_IMU() {
 }
 
 void print_IMU() {
+	#if DEBUG
 	Serial.print("acc:\t" + String(ax) + "\t" + String(ay) + "\t" + String(az) + "\t\t");
 	Serial.print("ang:\t" + String(wx) + "\t" + String(wy) + "\t" + String(wz) + "\t\t");
 	Serial.println("mag:\t" + String(mx) + "\t" + String(my) + "\t" + String(mz) + "\t\t");
+	#endif
 }

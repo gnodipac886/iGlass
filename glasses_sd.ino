@@ -1,22 +1,28 @@
 //#include <SdFat.h>
 
 void setup_sd_card(){
+	#if DEBUG
 	if(!Serial){
 		Serial.begin(115200);
 		while (!Serial);
 	}
+	#endif
 
 	pinMode(chip_select, OUTPUT);
 	pinMode(chip_detect, INPUT);
 
 	while (!digitalRead(chip_detect)) {
+		#if DEBUG
 		Serial.println("No SD card detected");
+		#endif
 		delay(1000);
 	}
 	
 	if(!sd_setup_flag){ 
 		if (!SD.begin(SD_CONFIG)) {
+			#if DEBUG
 			Serial.println("initialization failed!");
+			#endif
 			while (1);
 		}
 	}

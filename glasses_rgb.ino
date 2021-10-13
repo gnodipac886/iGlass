@@ -55,8 +55,6 @@ void rgb_setColor(int red, int green, int blue)
     scale_pos = 0;
     scale_upwards = 1;
 
-    //setTime(0);
-    //rgb_timer.resume();
     rgb_timer = millis();
 }
 
