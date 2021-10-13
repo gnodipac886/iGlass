@@ -2,6 +2,7 @@
 #include <Arduino_LSM9DS1.h>
 
 void setup_imu() {
+  if (imu_setup_flag == 1) {return;}
 	if(!Serial){
 		Serial.begin(115200);
 		while (!Serial);
@@ -17,7 +18,10 @@ void setup_imu() {
 }
 
 void end_imu() {
+  if (imu_setup_flag == 0) {return;}
+  Serial.println("In IMU end");
 	IMU.end();
+  Serial.println("IMU ended!!!");
 	imu_setup_flag = 0;
 }
 

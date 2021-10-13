@@ -4,6 +4,7 @@ const String SLEEP = "UD";
 const String WAKE = "DU";
 
 void stop_write_sd_handler() {
+    if (SD_WRITE_FLAG == 0) {return;}
     SD_WRITE_FLAG = 0;
     mic_flush_counter = 0;
     mic_file.flush();
@@ -16,6 +17,7 @@ void stop_write_sd_handler() {
 }
 
 void write_sd_handler() {
+    if (SD_WRITE_FLAG == 1) {return;}
     Serial.println("Starting SD recording");
     wake_from_sleep_handler();
     SD_WRITE_FLAG = 1;
@@ -32,7 +34,11 @@ void wake_from_sleep_handler() {
 void go_to_sleep_handler() {
     Serial.println("Going to sleep");
     end_mic();
+    Serial.println("End mic");
     end_imu();
+    Serial.println("End imu");
+    //rgb
+    rgb_off();
 }
 
 void ble_start_handler() {

@@ -1,3 +1,5 @@
+#include <Time.h>
+
 int NONE = -1;
 int BACK = 1;
 int FRONT = 2;
@@ -16,8 +18,8 @@ int movements[movements_per_state];
 byte movements_idx = 0;
 
 // time/#loops (after first gesture) allowed before outputting detected gestures (max# = movements_per_state)
-int time_count = 0;
-const int time_to_process_state = 210*movements_per_state;
+unsigned long gesture_timer;
+int gesture_time_limit = 1500;
 
 #include <Arduino_APDS9960.h>
 
@@ -57,29 +59,33 @@ void IR_gesture_check() {
           case GESTURE_UP:
             movements[movements_idx] = BACK; //"B";   //back
             movements_idx += 1;
-            // Serial.println("gesture back");
+            Serial.println("gesture back");
             start_counting = true;
+            gesture_timer = millis();
             break;
     
           case GESTURE_DOWN:
             movements[movements_idx] = FRONT;//"F";   //front
             movements_idx += 1;
-            // Serial.println("gesture frnt");
+            Serial.println("gesture frnt");
             start_counting = true;
+            gesture_timer = millis();
             break;
     
           case GESTURE_LEFT:
             movements[movements_idx] = UP;//"U";   //up
             movements_idx += 1;
-            // Serial.println("gesture up");
+            Serial.println("gesture up");
             start_counting = true;
+            gesture_timer = millis();
             break;
     
           case GESTURE_RIGHT:
             movements[movements_idx] = DOWN;//"D";   //down
             movements_idx += 1;
-            // Serial.println("gesture down");
+            Serial.println("gesture down");
             start_counting = true;
+            gesture_timer = millis();
             break;
     
           default:
@@ -90,8 +96,8 @@ void IR_gesture_check() {
     }
   }
   // Up to (time_to_process_state-1) loops after we detect the first gesture, we print whatever movements (max amt: movements_per_state) we sensed => state/command indicated
-  if (time_count == time_to_process_state || movements_idx == movements_per_state) {
-    time_count = 0;
+  if ((millis() - gesture_timer >= gesture_time_limit && start_counting == true)|| movements_idx == movements_per_state) {
+    //time_count = 0;
     start_counting = false;
     
     if (movements_idx == 0) {
@@ -108,15 +114,10 @@ void IR_gesture_check() {
         //movements[i] = "";
       }
     }
-    
-    Serial.println(cur_state);
     IR_command = cur_state;
     IR_command_given = 1;
     
     cur_state = NONE; //"No gesture";
     movements_idx = 0;
-  }
-  if (start_counting) {
-    time_count += 1;
   }
 }

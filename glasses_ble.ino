@@ -137,23 +137,23 @@ void setup_TMP(){
 }
 
 void ble_setup(){
-  if (!ble_setup_flag) {
-    pinMode( BLE_LED_PIN, OUTPUT );
-    pinMode( RSSI_LED_PIN, OUTPUT );
+  if (ble_setup_flag == 1) {return;}
+  
+  pinMode( BLE_LED_PIN, OUTPUT );
+  pinMode( RSSI_LED_PIN, OUTPUT );
 
-    // for power savings we can turn sensors on only when a central connects
-    setup_imu();
-    // setup_mic();
-    setup_CLR();
-    setup_TMP();
+  // for power savings we can turn sensors on only when a central connects
+  setup_imu();
+  // setup_mic();
+  setup_CLR();
+  setup_TMP();
 
-    Serial.print( "Accelerometer sample rate = " );
-    Serial.print( IMU.accelerationSampleRate() );
-    Serial.println( " Hz" );
+  Serial.print( "Accelerometer sample rate = " );
+  Serial.print( IMU.accelerationSampleRate() );
+  Serial.println( " Hz" );
 
-    if( setupBleMode() ){
-      digitalWrite( BLE_LED_PIN, HIGH );
-    }
+  if( setupBleMode() ){
+    digitalWrite( BLE_LED_PIN, HIGH );
   }
   //rgb
   rgb_setColor(0,0,255);
@@ -289,6 +289,7 @@ void update_ble(){
 //---------------------------------------------------------------------------------------------------------------------
 
 void ble_end() {
+  if (ble_setup_flag == 0) {return;}
 	BLE.end();
   //rgb
   rgb_off();

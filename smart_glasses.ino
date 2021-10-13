@@ -1,6 +1,7 @@
 #include <PDM.h>
 #include "SdFat.h"
 #include "sdios.h"
+#include <Time.h>
 
 #define PDM_BUF_SIZE 1024 * 16
 #define IMU_BUF_SIZE 1024 * 9
@@ -26,8 +27,8 @@ const uint8_t SD_CS_PIN = SDCARD_SS_PIN;
 
 
 //IR Commands
-#define GES_WRITE_SD 		    1     	//F
-#define GES_STOP_WRITE_SD 		2     	//B
+#define GES_WRITE_SD 		    2     	//F
+#define GES_STOP_WRITE_SD 		1     	//B
 #define GES_SLEEP 			    3     	//U
 #define GES_WAKE 			    4     	//D
 #define GES_BLE_START			12		//FB
@@ -81,29 +82,31 @@ const uint8_t SD_CS_PIN = SDCARD_SS_PIN;
 
 // others
 	volatile int setup_complete, int_mic, int_imu = 0;
-
+  unsigned long rgb_timer;
+ 
 //Flags
 	char SD_WRITE_FLAG = 0;
 	int mic_setup_flag, imu_setup_flag, sd_setup_flag, ble_setup_flag = 0;
 /***********************************************/
 
 void setup() {
-	if(!Serial){
-		Serial.begin(115200);
-		while (!Serial);
-	}
+  	if(!Serial){
+  		Serial.begin(115200);
+  		while (!Serial);
+  	}
 
-  	pinMode(LED_BUILTIN, OUTPUT);
-
-	setup_rgb();
+    pinMode(LED_BUILTIN, OUTPUT);
+  	setup_rgb();
     setup_ir();
-	setup_sd_card();
-	attachInterrupt(digitalPinToInterrupt(chip_detect), card_detect, CHANGE);
-	setup_complete = 1;
+  	setup_sd_card();
+  	attachInterrupt(digitalPinToInterrupt(chip_detect), card_detect, CHANGE);
+  	setup_complete = 1;
 }
 
 void loop() {
-  	IR_gesture_check();
+  IR_gesture_check();
+  if (IR_command_given) {
+  }
 	if(card_present && setup_complete && IR_command_given){    
 		//update_IMU();
 		IR_command_given = 0;
@@ -146,7 +149,7 @@ void loop() {
 		//delay(250);
 	}
 
-	if (SD_WRITE_FLAG == 1) {
+	if (SD_WRITE_FLAG == 1) {W
 		if(mic_file) {
 			save_mic_data();
 		} else {
@@ -160,10 +163,16 @@ void loop() {
 	}
 
 	if (ble_setup_flag == 1) {
+    Serial.println("updating ble!!");
 		update_ble();
 	}
 	//rgb
 	if (SD_WRITE_FLAG == 1 || ble_setup_flag == 1) {
-		update_rgb();
+    //Serial.println("updating rgb!!!");
+		//rgb_timer.update();
+    if (millis()- rgb_timer >= 40) {
+      update_rgb();
+      rgb_timer = millis();
+    }
 	}
 }

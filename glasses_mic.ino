@@ -3,6 +3,8 @@
 #include <hal/nrf_pdm.h>
 
 void setup_mic() {
+  if (mic_setup_flag == 1) {return;}    //maybe we shouldnt do this, so that PDM.onReceive(onPDMdata) is called
+  
 	if (!Serial) {
 		Serial.begin(115200);
 		while (!Serial);
@@ -18,17 +20,16 @@ void setup_mic() {
 	// Defaults to 20 on the BLE Sense and -10 on the Portenta Vision Shield
 	// PDM.setGain(30);
 
-	if(!mic_setup_flag){
-		if (!PDM.begin(channels, frequency)) {
-		Serial.println("Failed to start PDM!");
-		while (1);
-		}
+	if (!PDM.begin(channels, frequency)) {
+  	Serial.println("Failed to start PDM!");
+  	while (1);
 	}
 
 	mic_setup_flag = 1;
 }
 
 void end_mic() {
+  if (mic_setup_flag == 0) {return;}
 	PDM.end();
 	mic_setup_flag = 0;
 }

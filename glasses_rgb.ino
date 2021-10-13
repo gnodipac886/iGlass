@@ -1,3 +1,5 @@
+#include <Time.h>
+
 int RED_PIN = 22;
 int GREEN_PIN = 23;
 int BLUE_PIN = 24;
@@ -6,7 +8,7 @@ int RED_VAL;
 int GREEN_VAL;
 int BLUE_VAL;
 
-int SCALE_TIME = 10000;
+int SCALE_TIME = 15;
 int scale_pos;
 int scale_upwards;
 
@@ -15,9 +17,9 @@ void setup_rgb() {
     pinMode(RED_PIN, OUTPUT);
     pinMode(GREEN_PIN, OUTPUT);
     pinMode(BLUE_PIN, OUTPUT);
-    digitalWrite(RED_PIN, LOW);
-    digitalWrite(GREEN_PIN, LOW);
-    digitalWrite(BLUE_PIN, LOW);
+    digitalWrite(RED_PIN, HIGH);
+    digitalWrite(GREEN_PIN, HIGH);
+    digitalWrite(BLUE_PIN, HIGH);
 }
 
 void update_rgb()
@@ -51,13 +53,13 @@ void rgb_setColor(int red, int green, int blue)
     BLUE_VAL = blue;
 
     scale_pos = 0;
-    scale_upwards = 1;  
+    scale_upwards = 1;
+
+    //setTime(0);
+    //rgb_timer.resume();
+    rgb_timer = millis();
 }
 
 void rgb_off() {
-    digitalWrite(RED_PIN, LOW);
-    digitalWrite(GREEN_PIN, LOW);
-    digitalWrite(BLUE_PIN, LOW);
+    showColor(0,0,0);
 }
-
-//RTC timer
