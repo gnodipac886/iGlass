@@ -28,13 +28,17 @@ const uint8_t SD_CS_PIN = SDCARD_SS_PIN;
 #endif  // HAS_SDIO_CLASSs
 
 
-//IR Commands
+// IR Commands
 #define GES_WRITE_SD 		    2     	//F
 #define GES_STOP_WRITE_SD 		1     	//B
 #define GES_SLEEP 			    3     	//U
 #define GES_WAKE 			    4     	//D
 #define GES_BLE_START			12		//FB
 #define GES_BLE_STOP			21		//BF
+
+// Others
+#define USING_SD				0
+#define USING_BLE				1
 
 /****************Global Variables***************/
 
@@ -54,18 +58,19 @@ const uint8_t SD_CS_PIN = SDCARD_SS_PIN;
 
 // pdm microphone variables
 	PDMClass PDM(D8, D7, D6);
+	PDMClass PDM2(PIN_PDM_DIN, PIN_PDM_CLK, PIN_PDM_PWR);
 
 	int mic_prev_time, mic_flush_counter = 0;
 
 	// default number of output channels
-	static const char channels = 2;
+	static char channels = 2;
 
 	// default PCM output frequency, 41667
-	static const int frequency = 41667;
+	static int frequency = 41667;
 
 	// Buffer to read samples into, each sample is 16-bits
 	short mic_sampleBuffer[PDM_BUF_SIZE];
-	int pdm_sample_size = sizeof(mic_sampleBuffer[0]);
+	int pdm_sample_size = sizeof(short);// mic_sampleBuffer[0]);
 	volatile int mic_print_arr;
 
 	// Number of audio samples read
@@ -99,86 +104,85 @@ void setup() {
 	}
 	#endif
 
-    pinMode(LED_BUILTIN, OUTPUT);
-  	setup_rgb();
-    setup_ir();
-  	setup_sd_card();
-  	attachInterrupt(digitalPinToInterrupt(chip_detect), card_detect, CHANGE);
-  	setup_complete = 1;
+  pinMode(LED_BUILTIN, OUTPUT);
+	setup_rgb();
+  setup_ir();
+	// setup_sd_card();
+	attachInterrupt(digitalPinToInterrupt(chip_detect), card_detect, CHANGE);
+	setup_complete = 1;
+	ble_start_handler();
 }
 
 void loop() {
-  IR_gesture_check();
-  if (IR_command_given) {
-  }
-	if(card_present && setup_complete && IR_command_given){    
-		//update_IMU();
-		IR_command_given = 0;
-		//Process IR_commands
-		switch(IR_command) {
-			case GES_WRITE_SD:
-				write_sd_handler(); 
-				break;
+  //IR_gesture_check();........................................................................................
+	// if(card_present && setup_complete && IR_command_given){    
+	// 	//update_IMU();
+	// 	IR_command_given = 0;
+	// 	//Process IR_commands
+	// 	switch(IR_command) {
+	// 		case GES_WRITE_SD:
+	// 			write_sd_handler(); 
+	// 			break;
 			
-			case GES_STOP_WRITE_SD:
-				stop_write_sd_handler();
-				break;
+	// 		case GES_STOP_WRITE_SD:
+	// 			stop_write_sd_handler();
+	// 			break;
 
-			case GES_WAKE:
-				wake_from_sleep_handler();
-				break;
+	// 		case GES_WAKE:
+	// 			wake_from_sleep_handler();
+	// 			break;
 
-			case GES_SLEEP:
-				go_to_sleep_handler();
-				break;
+	// 		case GES_SLEEP:
+	// 			go_to_sleep_handler();
+	// 			break;
 
-			case GES_BLE_START:
-				ble_start_handler();					//flag + update ble function
-				break;
+	// 		case GES_BLE_START:
+	// 			ble_start_handler();					//flag + update ble function
+	// 			break;
 
-			case GES_BLE_STOP:
-				ble_end_handler();
-				break;
+	// 		case GES_BLE_STOP:
+	// 			ble_end_handler();
+	// 			break;
 
-			default:
-				break;
-    	}
-        IR_command = -1;
-	} else if(card_present && !setup_complete){
-		imu_file = SD.open(imu_fname, O_WRITE | O_CREAT);
-		setup_complete = 1;
-    	delay(100);
-	} else {
-		//Serial.println("SD card not present");
-		//delay(250);
-	}
+	// 		default:
+	// 			break;
+    // 	}
+    //     IR_command = -1;
+	// } else if(card_present && !setup_complete){
+	// 	imu_file = SD.open(imu_fname, O_WRITE | O_CREAT);
+	// 	setup_complete = 1;
+    // 	delay(100);
+	// } else {
+	// 	//Serial.println("SD card not present");
+	// 	//delay(250);
+	// }
 
-	if (SD_WRITE_FLAG == 1) {
-		if(mic_file) {
-			save_mic_data();
-		} else {
-			#if DEBUG
-			Serial.println("error opening mic_data file");
-			#endif
-		}
-		if(imu_file) {
-			update_IMU();
-		} else {
-			#if DEBUG
-			Serial.println("error opening imu_data file");
-			#endif
-		}
-	}
+	// if (SD_WRITE_FLAG == 1) {
+	// 	if(mic_file) {
+	// 		save_mic_data();
+	// 	} else {
+	// 		#if DEBUG
+	// 		Serial.println("error opening mic_data file");
+	// 		#endif
+	// 	}
+	// 	if(imu_file) {
+	// 		update_IMU(imu_sampleBuffer);
+	// 	} else {
+	// 		#if DEBUG
+	// 		Serial.println("error opening imu_data file");
+	// 		#endif
+	// 	}
+	// }
 
 	if (ble_setup_flag == 1) {
-    Serial.println("updating ble!!");
+    // Serial.println("updating ble!!");
 		update_ble();
 	}
 	//rgb
-	if (SD_WRITE_FLAG == 1 || ble_setup_flag == 1) {
-    if (millis()- rgb_timer >= 40) {
-      update_rgb();
-      rgb_timer = millis();
-    }
-	}
+	// if (SD_WRITE_FLAG == 1 || ble_setup_flag == 1) {
+	// 	if (millis()- rgb_timer >= 40) {
+	// 	update_rgb();
+	// 	rgb_timer = millis();
+	// 	}
+	// }
 }

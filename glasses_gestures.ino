@@ -34,7 +34,7 @@ void wake_from_sleep_handler() {
     Serial.println("Waking up");
     #endif
     setup_imu();
-    setup_mic();
+    setup_mic(USING_SD, mic_sampleBuffer, PDM_BUF_SIZE * pdm_sample_size);
 }
 
 

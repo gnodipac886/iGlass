@@ -9,23 +9,27 @@
 // defines
 //----------------------------------------------------------------------------------------------------------------------
 
+#define HUMAN_SPEECH_FREQ             250
+#define DOWNSAMPLE_RATE               16000/(HUMAN_SPEECH_FREQ*2)
+#define BLE_MAX_SEND_SIZE             244
+
 #define BLE_UUID_TEST_SERVICE         "9A48ECBA-2E92-082F-C079-9E75AAE428B1"
 #define BLE_UUID_IMU                  "2713"
 #define BLE_UUID_MIC                  "2714"
 #define BLE_UUID_TMP                  "2715"
 #define BLE_UUID_CLR                  "2716"
 
-#define IMU_BUF_SIZE                  1 * 9
+#define BLE_IMU_BUF_SIZE              6 * 9
 #define TMP_BUF_SIZE                  1 * 3
 #define CLR_BUF_SIZE                  2 * 5
-#define MIC_BUF_SIZE 				  122
+#define MIC_BUF_SIZE                  BLE_MAX_SEND_SIZE / 2 *DOWNSAMPLE_RATE
 
 //----------------------------------------------------------------------------------------------------------------------
 // BLE
 //----------------------------------------------------------------------------------------------------------------------
 
 BLEService testService( BLE_UUID_TEST_SERVICE );
-BLECharacteristic IMUCharacteristic( BLE_UUID_IMU, BLERead | BLENotify , IMU_BUF_SIZE * sizeof(float), sizeof(float));
+BLECharacteristic IMUCharacteristic( BLE_UUID_IMU, BLERead | BLENotify , BLE_IMU_BUF_SIZE * sizeof(float), sizeof(float));
 BLECharacteristic TMPCharacteristic( BLE_UUID_TMP, BLERead | BLENotify , TMP_BUF_SIZE * sizeof(float), sizeof(float));
 BLECharacteristic CLRCharacteristic( BLE_UUID_CLR, BLERead | BLENotify , CLR_BUF_SIZE * sizeof(int), sizeof(int));
 BLECharacteristic MICCharacteristic( BLE_UUID_MIC, BLERead | BLENotify , MIC_BUF_SIZE * sizeof(short), sizeof(short));
@@ -42,9 +46,11 @@ int CENTRAL_FLAG = 0;
 //----------------------------------------------------------------------------------------------------------------------
 // Sensor buffers
 //----------------------------------------------------------------------------------------------------------------------
-float   IMU_buf[IMU_BUF_SIZE];
+float   ble_IMU_buf[BLE_IMU_BUF_SIZE];
+short   ble_MIC_buf[MIC_BUF_SIZE];
+short   ble_MIC_TEMP_BUF[MIC_BUF_SIZE/32];
 float   TMP_buf[TMP_BUF_SIZE];
-int   CLR_buf[TMP_BUF_SIZE];
+int     CLR_buf[TMP_BUF_SIZE];
 
 //----------------------------------------------------------------------------------------------------------------------
 // PDM
@@ -63,6 +69,7 @@ int   CLR_buf[TMP_BUF_SIZE];
 const int BLE_LED_PIN = LED_BUILTIN;
 const int RSSI_LED_PIN = LED_PWR;
 BLEDevice central;
+int ble_imu_buf_idx = 0;
 
 //---------------------------------------------------------------------------------------------------------------------
 // Setup Functions
@@ -144,13 +151,15 @@ void ble_setup(){
 
   // for power savings we can turn sensors on only when a central connects
   setup_imu();
-  // setup_mic();
+  // setup_mic(USING_BLE, ble_MIC_buf, MIC_BUF_SIZE * 2);
   setup_CLR();
-  setup_TMP();
+  // setup_TMP();
 
+  #ifdef DEBUG
   Serial.print( "Accelerometer sample rate = " );
   Serial.print( IMU.accelerationSampleRate() );
   Serial.println( " Hz" );
+  #endif
 
   if( setupBleMode() ){
     digitalWrite( BLE_LED_PIN, HIGH );
@@ -164,16 +173,9 @@ void ble_setup(){
 // Update Sensor Functions
 //----------------------------------------------------------------------------------------------------------------------
 void ble_update_IMU() {
-  if (IMU.accelerationAvailable()) {
-    IMU.readAcceleration(ble_ax, ble_ay, ble_az);
-  }
-
-  if (IMU.gyroscopeAvailable()) {
-    IMU.readGyroscope(ble_wx, ble_wy, ble_wz);
-  }
-
-  if (IMU.magneticFieldAvailable()) {
-    IMU.readMagneticField(ble_mx, ble_my, ble_mz);
+  if (ble_imu_buf_idx < BLE_IMU_BUF_SIZE){
+    int result = update_IMU(&ble_IMU_buf[ble_imu_buf_idx]);
+    ble_imu_buf_idx += result ? 9 : 0;
   }
 }
 
@@ -213,10 +215,24 @@ void ble_update_CLR(){
 //----------------------------------------------------------------------------------------------------------------------
 
 void ble_send_IMU(){
-  float _buf [] = {ble_ax, ble_ay, ble_az, ble_wx, ble_wy, ble_wz, ble_mx, ble_my, ble_mz};
-  memcpy(IMU_buf, _buf, 9 * sizeof(float));
+  // float temp[BLE_IMU_BUF_SIZE/2];
+  // memcpy(temp, ble_IMU_buf, sizeof(temp));
+  IMUCharacteristic.writeValue(ble_IMU_buf, sizeof(ble_IMU_buf));
+  // memcpy(temp, &(ble_IMU_buf[BLE_IMU_BUF_SIZE/2]), sizeof(temp));
+  // IMUCharacteristic.writeValue(temp, sizeof(temp));
+  // IMUCharacteristic.writeValue(ble_IMU_buf, ble_imu_buf_idx * sizeof(float));
+  //Serial.println(String(sizeof(ble_IMU_buf)));
+  memset(ble_IMU_buf, 0, sizeof(ble_IMU_buf));
+  ble_imu_buf_idx = 0;
+}
 
-  IMUCharacteristic.writeValue(IMU_buf, IMU_BUF_SIZE * sizeof(float));
+void ble_send_MIC(){
+  if(samplesRead){
+    for (int i = 0; i < BLE_MAX_SEND_SIZE / 2; i++)
+      ble_MIC_TEMP_BUF[i] = ble_MIC_buf[i * DOWNSAMPLE_RATE];
+    MICCharacteristic.writeValue(ble_MIC_TEMP_BUF, BLE_MAX_SEND_SIZE);
+    samplesRead = 0;
+  }
 }
 
 void ble_send_TMP(){
@@ -233,11 +249,6 @@ void ble_send_CLR(){
   CLRCharacteristic.writeValue(CLR_buf, CLR_BUF_SIZE * sizeof(float));
 }
 
-// void ble_send_MIC(){
-//   if(samplesRead){
-//     MICCharacteristic.writeValue(sampleBuffer, int(samplesRead) * sizeof(short));
-//   }
-// }
 
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -264,15 +275,24 @@ void update_ble(){
 
     while ( central.connected() ){
       ble_update_IMU();
-      ble_update_TMP();
-      ble_update_CLR();
-      
+      // ble_update_TMP();
+      // ble_update_CLR();
+
+      // ble imu buf is full
+      // Serial.println("ble_imu_buf_idx: " + String(ble_imu_buf_idx));
+      if(ble_imu_buf_idx == BLE_IMU_BUF_SIZE){
+        ble_send_IMU();
+      }
+      // if(samplesRead){
+      //   ble_send_MIC();
+      // }
+
       long interval = 100;
       unsigned long currentMillis = millis();
       if( currentMillis - previousMillis > interval && central.connected()){
         previousMillis = currentMillis;
-        
-          ble_send_IMU();
+          
+          // ble_send_IMU();
           ble_send_TMP();
           ble_send_CLR();
       }

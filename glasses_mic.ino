@@ -1,9 +1,24 @@
 #include <PDM.h>
 //#include <SdFat.h>
-#include <hal/nrf_pdm.h>
+// #include <hal/nrf_pdm.h>
 
-void setup_mic() {
-  if (mic_setup_flag == 1) {return;}
+static short * _buf = NULL;
+static int _buf_size = 0;
+static PDMClass & _cur_pdm = PDM;
+
+	/*
+user - 	0: sd card
+		1: ble
+buf  - 	buffer to use
+buf_size: buffer size 
+*/
+	void
+	setup_mic(int user, short *buf, int buf_size)
+{
+	if (mic_setup_flag == 1)
+	{
+		return;
+	}
   
 	#if DEBUG
 	if (!Serial) {
@@ -12,9 +27,26 @@ void setup_mic() {
 	}
 	#endif
 
+	switch(user){
+		case USING_SD:
+			channels = 2;
+			frequency = 41667;
+			_cur_pdm = PDM;
+			break;
+		case USING_BLE:
+			channels = 1;
+			frequency = 16000;
+			// PDM(PIN_PDM_DIN, PIN_PDM_CLK, PIN_PDM_PWR);	
+			_cur_pdm = PDM2;
+			break;
+	}
+
+	_buf = buf;
+	_buf_size = buf_size;
+
 	// Configure the data receive callback
-	PDM.onReceive(onPDMdata);
-	PDM.setBufferSize(PDM_BUF_SIZE * pdm_sample_size);
+	_cur_pdm.onReceive(onPDMdata);
+	_cur_pdm.setBufferSize(_buf_size);
 
 	mic_print_arr = 0;
 
@@ -23,7 +55,7 @@ void setup_mic() {
 	// PDM.setGain(30);
 
 	if(!mic_setup_flag){
-		if (!PDM.begin(channels, frequency)) {
+		if (!_cur_pdm.begin(channels, frequency)){
 			#if DEBUG
 			Serial.println("Failed to start PDM!");
 			#endif
@@ -36,8 +68,10 @@ void setup_mic() {
 
 void end_mic() {
   if (mic_setup_flag == 0) {return;}
-	PDM.end();
+	_cur_pdm.end();
 	mic_setup_flag = 0;
+	_buf = NULL;
+	_buf_size = 0;
 }
 
 void save_mic_data() {
@@ -45,12 +79,12 @@ void save_mic_data() {
 	if (samplesRead) {
 
 	//    int start = micros();
-		int_mic = 0;
+		int_mic = 0;						//......
 	//    NVIC_DisableIRQ(PDM_IRQn);
 		mic_file.write((byte*)mic_sampleBuffer, (size_t)(PDM_BUF_SIZE * pdm_sample_size));
 	//    NVIC_EnableIRQ(PDM_IRQn);
 	//    Serial.println("Bytes: " + String(PDM_BUF_SIZE * pdm_sample_size));
-		if(int_mic){
+		if(int_mic){						//.........
 			#if DEBUG
 			Serial.println("mic int");
 			#endif
@@ -70,6 +104,7 @@ void save_mic_data() {
 	}
 }
 
+
 /**
 	 Callback function to process the data from the PDM microphone.
 	 NOTE: This callback is executed as part of an ISR.
@@ -77,14 +112,14 @@ void save_mic_data() {
  * */
 void onPDMdata() {
 	// Query the number of available bytes
-	int bytesAvailable = PDM.available();
+	int bytesAvailable = _cur_pdm.available();
 
 	// Read into the sample buffer
-	PDM.read(mic_sampleBuffer, bytesAvailable);
+	_cur_pdm.read(_buf, bytesAvailable);
 
 	// 16-bit, 2 bytes per sample
 	samplesRead = bytesAvailable / 2;
 
 	int_mic = 1;
-	int_imu = 1;
+	int_imu = 1;						//,............................
 }
