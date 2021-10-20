@@ -149,7 +149,7 @@ void setup_TMP(){
 void ble_update_IMU() {
   if (ble_imu_buf_idx < BLE_IMU_BUF_SIZE){
     int result = update_IMU(&ble_IMU_buf[ble_imu_buf_idx]);
-    ble_imu_buf_idx += result ? 3 : 0;
+    ble_imu_buf_idx += result ? 3 * result : 0;
   }
 }
 
@@ -187,7 +187,6 @@ void ble_update_CLR(){
 //---------------------------------------------------------------------------------------------------------------------
 // Send Sensor Functions
 //----------------------------------------------------------------------------------------------------------------------
-
 void ble_send_IMU(){
   // float temp[BLE_IMU_BUF_SIZE/2];
   // memcpy(temp, ble_IMU_buf, sizeof(temp));
@@ -241,7 +240,7 @@ void ble_setup(){
 
   // for power savings we can turn sensors on only when a central connects
   setup_imu();
-  // setup_mic(USING_BLE, ble_MIC_buf, MIC_BUF_SIZE * 2);
+  setup_mic(USING_BLE, ble_MIC_buf, MIC_BUF_SIZE * 2);
   // setup_CLR();
   // setup_TMP();
 
@@ -279,6 +278,7 @@ void update_ble(){
     // Serial.println( central.address() );
 
     while ( central.connected() ){
+      // int prev = micros();
       ble_update_IMU();
       // ble_update_TMP();
       // ble_update_CLR();
@@ -288,9 +288,10 @@ void update_ble(){
       if(ble_imu_buf_idx == BLE_IMU_BUF_SIZE){
         ble_send_IMU();
       }
-      // if(samplesRead){
-      //   ble_send_MIC();
-      // }
+      // Serial.println(String(micros() - prev));
+      if(samplesRead){
+        ble_send_MIC();
+      }
 
       // long interval = 100;
       // unsigned long currentMillis = millis();

@@ -2,6 +2,26 @@
 // #include <Arduino_LSM9DS1.h>
 #include <Arduino_LSM9DS1.h>
 
+#define LSM9DS1_ADDRESS            0x6b
+
+#define LSM9DS1_WHO_AM_I           0x0f
+#define LSM9DS1_CTRL_REG1_G        0x10
+#define LSM9DS1_STATUS_REG         0x17
+#define LSM9DS1_OUT_X_G            0x18
+#define LSM9DS1_CTRL_REG6_XL       0x20
+#define LSM9DS1_CTRL_REG8          0x22
+#define LSM9DS1_OUT_X_XL           0x28
+
+// magnetometer
+#define LSM9DS1_ADDRESS_M          0x1e
+
+#define LSM9DS1_CTRL_REG1_M        0x20
+#define LSM9DS1_CTRL_REG2_M        0x21
+#define LSM9DS1_CTRL_REG3_M        0x22
+#define LSM9DS1_CTRL_REG4_M        0x23
+#define LSM9DS1_STATUS_REG_M       0x27
+#define LSM9DS1_OUT_X_L_M          0x28
+
 // int imu_buf_idx = 0;
 
 void setup_imu() {
@@ -21,6 +41,7 @@ void setup_imu() {
 			while (1);
 		}
 	}
+	IMU.setContinuousMode();
 	IMU.setAccelFS(3);
 	IMU.setAccelODR(5);			 //
 	IMU.setAccelOffset(0, 0, 0); //   uncalibrated
@@ -47,28 +68,29 @@ void save_imu_data(){
   	}
 }
 
-int imu_counter = 0;
 int update_IMU(float * buf) {
-	bool avail[3];
+	int avail[3];
 
 	if (avail[0] = IMU.accelerationAvailable()) {
-		IMU.readAcceleration(ax, ay, az);
+		// IMU.readAcceleration(ax, ay, az);
+		if (avail[0] < 32) return 0;
+		for(int i = 0; i < 20; i++){
+			IMU.readAcceleration(buf[i * 3], buf[i * 3 + 1], buf[i * 3 + 2]);
+		}
+		return 20;
 	}
 
-	if (avail[1] = IMU.gyroscopeAvailable()) {
-		IMU.readGyroscope(wx, wy, wz);
-	}
+	// if (avail[1] = IMU.gyroscopeAvailable()) {
+	// 	IMU.readGyroscope(wx, wy, wz);
+	// }
 
-	if (avail[2] = IMU.magneticFieldAvailable()) {
-		IMU.readMagneticField(mx, my, mz);
-	}
+	// if (avail[2] = IMU.magneticFieldAvailable()) {
+	// 	IMU.readMagneticField(mx, my, mz);
+	// }
 
 	if(avail[0]){
 		float temp_data[3] = {ax, ay, az};
 		memcpy(buf, temp_data, sizeof(float) * 3);
-		#if DEBUG
-				Serial.println("imu sent " + String(imu_counter++ % 452));
-		#endif
 		// float temp_data[9] = {ax, ay, az, wx, wy, wz, mx, my, mz};
 		// memcpy(buf, temp_data, sizeof(float) * 9);
 		return 1;

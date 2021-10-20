@@ -6,7 +6,7 @@
 #define PDM_BUF_SIZE 1024 * 16
 #define IMU_BUF_SIZE 1024 * 9
 
-#define DEBUG 1
+#define DEBUG 0
 
 #ifndef SDCARD_SS_PIN
 const uint8_t SD_CS_PIN = SS;
