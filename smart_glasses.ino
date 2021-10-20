@@ -6,7 +6,7 @@
 #define PDM_BUF_SIZE 1024 * 16
 #define IMU_BUF_SIZE 1024 * 9
 
-#define DEBUG 0
+#define DEBUG 1
 
 #ifndef SDCARD_SS_PIN
 const uint8_t SD_CS_PIN = SS;
@@ -105,10 +105,10 @@ void setup() {
 	#endif
 
   pinMode(LED_BUILTIN, OUTPUT);
-	setup_rgb();
-  setup_ir();
+// 	setup_rgb();
+//   setup_ir();
 	// setup_sd_card();
-	attachInterrupt(digitalPinToInterrupt(chip_detect), card_detect, CHANGE);
+	// attachInterrupt(digitalPinToInterrupt(chip_detect), card_detect, CHANGE);
 	setup_complete = 1;
 	ble_start_handler();
 }

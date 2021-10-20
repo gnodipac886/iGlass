@@ -1,4 +1,5 @@
 //#include <SdFat.h>
+// #include <Arduino_LSM9DS1.h>
 #include <Arduino_LSM9DS1.h>
 
 // int imu_buf_idx = 0;
@@ -20,6 +21,10 @@ void setup_imu() {
 			while (1);
 		}
 	}
+	IMU.setAccelFS(3);
+	IMU.setAccelODR(5);			 //
+	IMU.setAccelOffset(0, 0, 0); //   uncalibrated
+	IMU.setAccelSlope(1, 1, 1);	 //   uncalibrated
 	imu_setup_flag = 1;
 }
 
@@ -42,6 +47,7 @@ void save_imu_data(){
   	}
 }
 
+int imu_counter = 0;
 int update_IMU(float * buf) {
 	bool avail[3];
 
@@ -58,8 +64,13 @@ int update_IMU(float * buf) {
 	}
 
 	if(avail[0]){
-		float temp_data[9] = {ax, ay, az, wx, wy, wz, mx, my, mz};
-		memcpy(buf, temp_data, sizeof(float) * 9);
+		float temp_data[3] = {ax, ay, az};
+		memcpy(buf, temp_data, sizeof(float) * 3);
+		#if DEBUG
+				Serial.println("imu sent " + String(imu_counter++ % 452));
+		#endif
+		// float temp_data[9] = {ax, ay, az, wx, wy, wz, mx, my, mz};
+		// memcpy(buf, temp_data, sizeof(float) * 9);
 		return 1;
 		// FIXME: add to sd card
 		// if(imu_buf_idx == IMU_BUF_SIZE){

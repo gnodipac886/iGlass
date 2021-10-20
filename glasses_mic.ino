@@ -12,8 +12,7 @@ user - 	0: sd card
 buf  - 	buffer to use
 buf_size: buffer size 
 */
-	void
-	setup_mic(int user, short *buf, int buf_size)
+void setup_mic(int user, short *buf, int buf_size)
 {
 	if (mic_setup_flag == 1)
 	{

@@ -9,7 +9,7 @@
 // defines
 //----------------------------------------------------------------------------------------------------------------------
 
-#define HUMAN_SPEECH_FREQ             250
+#define HUMAN_SPEECH_FREQ             1500
 #define DOWNSAMPLE_RATE               16000/(HUMAN_SPEECH_FREQ*2)
 #define BLE_MAX_SEND_SIZE             244
 
@@ -19,10 +19,10 @@
 #define BLE_UUID_TMP                  "2715"
 #define BLE_UUID_CLR                  "2716"
 
-#define BLE_IMU_BUF_SIZE              6 * 9
+#define BLE_IMU_BUF_SIZE              20 * 3// 6 * 9 nine items
 #define TMP_BUF_SIZE                  1 * 3
 #define CLR_BUF_SIZE                  2 * 5
-#define MIC_BUF_SIZE                  BLE_MAX_SEND_SIZE / 2 *DOWNSAMPLE_RATE
+#define MIC_BUF_SIZE                  (BLE_MAX_SEND_SIZE / 2) * DOWNSAMPLE_RATE
 
 //----------------------------------------------------------------------------------------------------------------------
 // BLE
@@ -32,7 +32,7 @@ BLEService testService( BLE_UUID_TEST_SERVICE );
 BLECharacteristic IMUCharacteristic( BLE_UUID_IMU, BLERead | BLENotify , BLE_IMU_BUF_SIZE * sizeof(float), sizeof(float));
 BLECharacteristic TMPCharacteristic( BLE_UUID_TMP, BLERead | BLENotify , TMP_BUF_SIZE * sizeof(float), sizeof(float));
 BLECharacteristic CLRCharacteristic( BLE_UUID_CLR, BLERead | BLENotify , CLR_BUF_SIZE * sizeof(int), sizeof(int));
-BLECharacteristic MICCharacteristic( BLE_UUID_MIC, BLERead | BLENotify , MIC_BUF_SIZE * sizeof(short), sizeof(short));
+BLECharacteristic MICCharacteristic(BLE_UUID_MIC, BLERead | BLENotify, BLE_MAX_SEND_SIZE);
 
 //----------------------------------------------------------------------------------------------------------------------
 // Sensor variables
@@ -48,7 +48,7 @@ int CENTRAL_FLAG = 0;
 //----------------------------------------------------------------------------------------------------------------------
 float   ble_IMU_buf[BLE_IMU_BUF_SIZE];
 short   ble_MIC_buf[MIC_BUF_SIZE];
-short   ble_MIC_TEMP_BUF[MIC_BUF_SIZE/32];
+short   ble_MIC_TEMP_BUF[MIC_BUF_SIZE / DOWNSAMPLE_RATE];
 float   TMP_buf[TMP_BUF_SIZE];
 int     CLR_buf[TMP_BUF_SIZE];
 
@@ -143,39 +143,13 @@ void setup_TMP(){
   }
 }
 
-void ble_setup(){
-  if (ble_setup_flag == 1) {return;}
-  
-  pinMode( BLE_LED_PIN, OUTPUT );
-  pinMode( RSSI_LED_PIN, OUTPUT );
-
-  // for power savings we can turn sensors on only when a central connects
-  setup_imu();
-  // setup_mic(USING_BLE, ble_MIC_buf, MIC_BUF_SIZE * 2);
-  setup_CLR();
-  // setup_TMP();
-
-  #ifdef DEBUG
-  Serial.print( "Accelerometer sample rate = " );
-  Serial.print( IMU.accelerationSampleRate() );
-  Serial.println( " Hz" );
-  #endif
-
-  if( setupBleMode() ){
-    digitalWrite( BLE_LED_PIN, HIGH );
-  }
-  //rgb
-  rgb_setColor(0,0,255);
-  ble_setup_flag = 1;
-}
-
 //---------------------------------------------------------------------------------------------------------------------
 // Update Sensor Functions
 //----------------------------------------------------------------------------------------------------------------------
 void ble_update_IMU() {
   if (ble_imu_buf_idx < BLE_IMU_BUF_SIZE){
     int result = update_IMU(&ble_IMU_buf[ble_imu_buf_idx]);
-    ble_imu_buf_idx += result ? 9 : 0;
+    ble_imu_buf_idx += result ? 3 : 0;
   }
 }
 
@@ -226,11 +200,15 @@ void ble_send_IMU(){
   ble_imu_buf_idx = 0;
 }
 
+int mic_counter = 0;
 void ble_send_MIC(){
   if(samplesRead){
     for (int i = 0; i < BLE_MAX_SEND_SIZE / 2; i++)
       ble_MIC_TEMP_BUF[i] = ble_MIC_buf[i * DOWNSAMPLE_RATE];
     MICCharacteristic.writeValue(ble_MIC_TEMP_BUF, BLE_MAX_SEND_SIZE);
+    // #if DEBUG
+    // Serial.println("mic sent " + String(mic_counter++));
+    // #endif
     samplesRead = 0;
   }
 }
@@ -252,8 +230,35 @@ void ble_send_CLR(){
 
 
 //---------------------------------------------------------------------------------------------------------------------
-// Main Loop
+// Setup and Main Loop
 //---------------------------------------------------------------------------------------------------------------------
+
+void ble_setup(){
+  if (ble_setup_flag == 1) {return;}
+  
+  pinMode( BLE_LED_PIN, OUTPUT );
+  pinMode( RSSI_LED_PIN, OUTPUT );
+
+  // for power savings we can turn sensors on only when a central connects
+  setup_imu();
+  // setup_mic(USING_BLE, ble_MIC_buf, MIC_BUF_SIZE * 2);
+  // setup_CLR();
+  // setup_TMP();
+
+  #ifdef DEBUG
+  Serial.print( "Accelerometer sample rate = " );
+  Serial.print( IMU.accelerationSampleRate() );
+  Serial.println( " Hz" );
+  #endif
+
+  if( setupBleMode() ){
+    digitalWrite( BLE_LED_PIN, HIGH );
+  }
+  //rgb
+  rgb_setColor(0,0,255);
+  ble_setup_flag = 1;
+}
+
 
 void update_ble(){
   static unsigned long counter = 0;
@@ -287,15 +292,15 @@ void update_ble(){
       //   ble_send_MIC();
       // }
 
-      long interval = 100;
-      unsigned long currentMillis = millis();
-      if( currentMillis - previousMillis > interval && central.connected()){
-        previousMillis = currentMillis;
+      // long interval = 100;
+      // unsigned long currentMillis = millis();
+      // if( currentMillis - previousMillis > interval && central.connected()){
+      //   previousMillis = currentMillis;
           
-          // ble_send_IMU();
-          ble_send_TMP();
-          ble_send_CLR();
-      }
+      //     // ble_send_IMU();
+      //     ble_send_TMP();
+      //     ble_send_CLR();
+      // }
 	    break;
     }
 
