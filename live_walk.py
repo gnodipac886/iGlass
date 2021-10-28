@@ -26,10 +26,10 @@ for f in imu_files:
     data = dict(pd.read_csv(f))
 
     # get sample rate
-    fs = data['ax'] / 10
+    fs = len(data['a_xyz']) / 10
     
     #sum up all the axis
-    ax_y_z = np.array(data['ax']) + np.array(data['ay']) + np.array(data['az'])
+    ax_y_z = np.array(data['a_xyz'])         #np.array(data['ax']) + np.array(data['ay']) + np.array(data['az'])
     
     # create a filtered data
     # 0.048
@@ -50,10 +50,10 @@ def live_walking_detection():
     global stop_thread
     while(stop_thread):
         imu_buf = ble_itf.imu_buf
-        if len(imu_buf['ax'][-256:]) != len(imu_buf['ay'][-256:]) or len(imu_buf['ay'][-256:]) != len(imu_buf['az'][-256:]) or len(imu_buf['ax'][-256:]) != len(imu_buf['az'][-256:]):
-            continue
+        # if len(imu_buf['ax'][-256:]) != len(imu_buf['ay'][-256:]) or len(imu_buf['ay'][-256:]) != len(imu_buf['az'][-256:]) or len(imu_buf['ax'][-256:]) != len(imu_buf['az'][-256:]):
+        #     continue
         try:
-            ax_y_z = np.array(imu_buf['ax'][-256:]) + np.array(imu_buf['ay'][-256:]) + np.array(imu_buf['az'][-256:])
+            ax_y_z = np.array(imu_buf['a_xyz'][-256:])         #np.array(imu_buf['ax'][-256:]) + np.array(imu_buf['ay'][-256:]) + np.array(imu_buf['az'][-256:])
             if len(ax_y_z) == 0:
                 continue
             b, a = butter(3, 2.4/(fs/2), 'low')
@@ -71,9 +71,10 @@ def live_walking_detection():
 # def main():
 ble_itf.mic_buf = []
 ble_itf.imu_buf = {
-    'ax' : [],
-    'ay' : [],
-    'az' : [],
+    'a_xyz' : []
+    # 'ax' : [],
+    # 'ay' : [],
+    # 'az' : [],
     'wx' : [],
     'wy' : [],
     'wz' : [],
@@ -93,7 +94,7 @@ stop_thread = 0
 sleep(2)
 # global stop_thread
 stop_thread = 1
-print('imu data_rate: ', len(ble_itf.imu_buf['ax']) / 10)
+print('imu data_rate: ', len(ble_itf.imu_buf['a_xyz']) / 10)
 print('mic data_rate: ', len(ble_itf.mic_buf) / 10)
 
 # if __name__ == '__main__':

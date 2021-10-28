@@ -26,10 +26,10 @@ for f in talk_files:
     data = dict(pd.read_csv(f))
     
     #sum up all the axis
-    nan_idx_x = np.argwhere(np.isnan(np.array(data['ax'])))[0][0]
-    nan_idx_y = np.argwhere(np.isnan(np.array(data['ay'])))[0][0]
-    nan_idx_z = np.argwhere(np.isnan(np.array(data['az'])))[0][0]
-    imu_data = np.array(data['ax'])[:nan_idx_x] + np.array(data['ay'])[:nan_idx_y] + np.array(data['az'])[:nan_idx_z]
+    # nan_idx_x = np.argwhere(np.isnan(np.array(data['ax'])))[0][0]
+    # nan_idx_y = np.argwhere(np.isnan(np.array(data['ay'])))[0][0]
+    # nan_idx_z = np.argwhere(np.isnan(np.array(data['az'])))[0][0]
+    imu_data = np.array(data['a_xyz'])   #np.array(data['ax'])[:nan_idx_x] + np.array(data['ay'])[:nan_idx_y] + np.array(data['az'])[:nan_idx_z]
     
     # create a filtered data
     fs_imu = len(imu_data) / 10
@@ -52,10 +52,10 @@ def live_talking_detection():
     global stop_thread
     while(stop_thread):
         imu_buf = ble_itf.imu_buf
-        if len(imu_buf['ax'][-256:]) != len(imu_buf['ay'][-256:]) or len(imu_buf['ay'][-256:]) != len(imu_buf['az'][-256:]) or len(imu_buf['ax'][-256:]) != len(imu_buf['az'][-256:]):
-            continue
+        # if len(imu_buf['ax'][-256:]) != len(imu_buf['ay'][-256:]) or len(imu_buf['ay'][-256:]) != len(imu_buf['az'][-256:]) or len(imu_buf['ax'][-256:]) != len(imu_buf['az'][-256:]):
+        #     continue
         try:
-            ax_y_z = np.array(imu_buf['ax'][-256:]) + np.array(imu_buf['ay'][-256:]) + np.array(imu_buf['az'][-256:])
+            ax_y_z = np.array(imu_buf['a_xyz'][-256:])     #np.array(imu_buf['ax'][-256:]) + np.array(imu_buf['ay'][-256:]) + np.array(imu_buf['az'][-256:])
             if len(ax_y_z) == 0:
                 continue
             b_imu, a_imu = butter(3, 35 / (fs_imu/2), 'high')
@@ -75,9 +75,10 @@ def live_talking_detection():
 # def main():
 ble_itf.mic_buf = []
 ble_itf.imu_buf = {
-    'ax' : [],
-    'ay' : [],
-    'az' : [],
+    'a_xyz' : []
+    # 'ax' : [],
+    # 'ay' : [],
+    # 'az' : [],
     'wx' : [],
     'wy' : [],
     'wz' : [],
@@ -100,7 +101,7 @@ stop_thread = 0
 sleep(2)
 # global stop_thread
 stop_thread = 1
-print('imu data_rate: ', len(ble_itf.mic_buf['ax']) / 10)
+print('imu data_rate: ', len(ble_itf.mic_buf['a_xyz']) / 10)
 print('mic data_rate: ', len(ble_itf.mic_buf) / 10)
 
 # if __name__ == '__main__':

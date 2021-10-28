@@ -20,9 +20,10 @@ global mic_buf, imu_buf, clr_buf
 mic_buf= []
 
 imu_buf = {
-	'ax' : [],
-	'ay' : [],
-	'az' : [],
+	'a_xyz' : []
+	#'ax' : [],
+	#'ay' : [],
+	#'az' : [],
 	'wx' : [],
 	'wy' : [],
 	'wz' : [],
@@ -39,8 +40,9 @@ def IMU_handler(name, data):
 	# print(struct.unpack('<'+'f'*9, data))
 	# print(len(data))
 	new_data = list(np.frombuffer(data, dtype=np.int16)) #struct.unpack('<'+'f'*9*6, data)
-	for i, key in enumerate(list(imu_buf.keys())[:3]):
-		imu_buf[key].extend(new_data[i::3])
+	# for i, key in enumerate(list(imu_buf.keys())[:3]):
+	# 	imu_buf[key].extend(new_data[i::3])
+	imu_buf['a_xyz'].extend(new_data)
 	# print(imu_buf['ax'][-1])
 
 def CLR_handler(name, data):
