@@ -1,6 +1,7 @@
 //#include <SdFat.h>
 // #include <Arduino_LSM9DS1.h>
 #include <Arduino_LSM9DS1.h>
+#include <math.h>
 
 #define LSM9DS1_ADDRESS            0x6b
 
@@ -22,7 +23,10 @@
 #define LSM9DS1_STATUS_REG_M       0x27
 #define LSM9DS1_OUT_X_L_M          0x28
 
-// int imu_buf_idx = 0;
+// accelerometer
+#define ax_WEIGHT					0.5
+#define ay_WEIGHT					1.0
+#define az_WEIGHT					0.5
 
 void setup_imu() {
   if (imu_setup_flag == 1) {return;}
@@ -42,10 +46,10 @@ void setup_imu() {
 		}
 	}
 	IMU.setContinuousMode();
-	IMU.setAccelFS(3);
-	IMU.setAccelODR(5);			 //
-	IMU.setAccelOffset(0, 0, 0); //   uncalibrated
-	IMU.setAccelSlope(1, 1, 1);	 //   uncalibrated
+	IMU.setAccelFS(3);			 // Full Scale's multiplication factor is +-8g (does not change output of read functions, just assigns more/less bits to sensor measurement)
+	IMU.setAccelODR(5);			 // Sampling Rate is 476 Hz
+	IMU.setAccelOffset(0, 0, 0); //   uncalibrated <---------why? because diff for walk/talk?...................
+	IMU.setAccelSlope(1, 1, 1);	 //   uncalibrated <--------- can use instead of weights?..........
 	imu_setup_flag = 1;
 }
 
@@ -70,14 +74,15 @@ void save_imu_data(){
 
 int update_IMU(float * buf) {
 	int avail[3];
-
+	int ax, ay, az;
+	//IMU.readAcceleration(ax, ay, az)
 	if (avail[0] = IMU.accelerationAvailable()) {
-		// IMU.readAcceleration(ax, ay, az);
 		if (avail[0] < 32) return 0;
-		for(int i = 0; i < 20; i++){
-			IMU.readAcceleration(buf[i * 3], buf[i * 3 + 1], buf[i * 3 + 2]);
+		for(int i = 0; i < 61; i++){					//20; i++){
+			IMU.readAcceleration(ax, ay, az)			//buf[i * 3], buf[i * 3 + 1], buf[i * 3 + 2]);
+			buf[i] = sqrt(square(ax_WEIGHT*ax)+square(ay_WEIGHT*ay)+square(az_WEIGHT*az))
 		}
-		return 20;
+		return 61;			//20;
 	}
 
 	// if (avail[1] = IMU.gyroscopeAvailable()) {
@@ -89,8 +94,8 @@ int update_IMU(float * buf) {
 	// }
 
 	if(avail[0]){
-		float temp_data[3] = {ax, ay, az};
-		memcpy(buf, temp_data, sizeof(float) * 3);
+		float temp_data = sqrt(square(ax_WEIGHT*ax)+square(ay_WEIGHT*ay)+square(az_WEIGHT*az))				//temp_data[3] = {ax, ay, az};
+		memcpy(buf, temp_data, sizeof(float))	// * 3);
 		// float temp_data[9] = {ax, ay, az, wx, wy, wz, mx, my, mz};
 		// memcpy(buf, temp_data, sizeof(float) * 9);
 		return 1;

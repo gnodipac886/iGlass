@@ -19,7 +19,7 @@
 #define BLE_UUID_TMP                  "2715"
 #define BLE_UUID_CLR                  "2716"
 
-#define BLE_IMU_BUF_SIZE              20 * 3// 6 * 9 nine items
+#define BLE_IMU_BUF_SIZE              61 * 1 //20 samples* 3 float values// 6 * 9 nine items
 #define TMP_BUF_SIZE                  1 * 3
 #define CLR_BUF_SIZE                  2 * 5
 #define MIC_BUF_SIZE                  (BLE_MAX_SEND_SIZE / 2) * DOWNSAMPLE_RATE
@@ -149,7 +149,7 @@ void setup_TMP(){
 void ble_update_IMU() {
   if (ble_imu_buf_idx < BLE_IMU_BUF_SIZE){
     int result = update_IMU(&ble_IMU_buf[ble_imu_buf_idx]);
-    ble_imu_buf_idx += result ? 3 * result : 0;
+    ble_imu_buf_idx += result ? result : 0//3 * result : 0;   //kinda want to send separate/spread-out samples instead of blocks of samples............
   }
 }
 
