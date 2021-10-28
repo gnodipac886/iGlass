@@ -78,11 +78,11 @@ int update_IMU(float * buf) {
 	//IMU.readAcceleration(ax, ay, az)
 	if (avail[0] = IMU.accelerationAvailable()) {
 		if (avail[0] < 32) return 0;
-		for(int i = 0; i < 61; i++){					//20; i++){
+		for(int i = 0; i < 32; i++){					//20; i++){
 			IMU.readAcceleration(ax, ay, az)			//buf[i * 3], buf[i * 3 + 1], buf[i * 3 + 2]);
 			buf[i] = sqrt(square(ax_WEIGHT*ax)+square(ay_WEIGHT*ay)+square(az_WEIGHT*az))
 		}
-		return 61;			//20;
+		return 122;			//20;
 	}
 
 	// if (avail[1] = IMU.gyroscopeAvailable()) {
