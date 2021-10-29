@@ -29,8 +29,10 @@ for f in talk_files:
     # nan_idx_x = np.argwhere(np.isnan(np.array(data['ax'])))[0][0]
     # nan_idx_y = np.argwhere(np.isnan(np.array(data['ay'])))[0][0]
     # nan_idx_z = np.argwhere(np.isnan(np.array(data['az'])))[0][0]
-    imu_data = np.array(data['a_xyz'])   #np.array(data['ax'])[:nan_idx_x] + np.array(data['ay'])[:nan_idx_y] + np.array(data['az'])[:nan_idx_z]
-    
+    imu_data = np.sqrt(np.square(np.array(data['ax'])) + np.square(np.array(data['ay'])) + np.square(np.array(data['az'])))     #np.array(data['a_xyz'])   #np.array(data['ax'])[:nan_idx_x] + np.array(data['ay'])[:nan_idx_y] + np.array(data['az'])[:nan_idx_z]
+    #can switch to math module's, ~7x faster
+
+ 
     # create a filtered data
     fs_imu = len(imu_data) / 10
     b_imu, a_imu = butter(3, 35 / (fs_imu/2), 'high')

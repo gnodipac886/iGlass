@@ -39,7 +39,7 @@ def IMU_handler(name, data):
 	global imu_buf
 	# print(struct.unpack('<'+'f'*9, data))
 	# print(len(data))
-	new_data = list(np.frombuffer(data, dtype=np.int16)) #struct.unpack('<'+'f'*9*6, data)
+	new_data = list(np.frombuffer(data, dtype=float)) #struct.unpack('<'+'f'*9*6, data)
 	# for i, key in enumerate(list(imu_buf.keys())[:3]):
 	# 	imu_buf[key].extend(new_data[i::3])
 	imu_buf['a_xyz'].extend(new_data)

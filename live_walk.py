@@ -26,10 +26,10 @@ for f in imu_files:
     data = dict(pd.read_csv(f))
 
     # get sample rate
-    fs = len(data['a_xyz']) / 10
+    fs = len(data['ax']) / 10
     
     #sum up all the axis
-    ax_y_z = np.array(data['a_xyz'])         #np.array(data['ax']) + np.array(data['ay']) + np.array(data['az'])
+    ax_y_z = np.sqrt(np.square(np.array(data['ax'])) + np.square(np.array(data['ay'])) + np.square(np.array(data['az'])))       #can switch to math module's, ~7x faster
     
     # create a filtered data
     # 0.048
