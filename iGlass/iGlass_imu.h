@@ -1,9 +1,9 @@
+#ifndef iGLASS_IMU_H
+#define iGLASS_IMU_H
+
 #include "arduino.h"
 #include <Arduino_LSM9DS1.h>
 #include <math.h>
-
-#ifndef iGLASS_IMU_H
-#define iGLASS_IMU_H
 
 //----------------------------------------------------------------------------------------------------------------------
 // defines
@@ -49,13 +49,13 @@ class iGlass_imu {
 		void 	init();
 		void 	end();
 		void 	print();
-		int 	read(int16_t *buf, int sensor);
+		int 	read(int16_t * buf, int num_samples, int sensor);
 
 	private:
 		int 	imu_setup_flag;
-		int 	read_acc(int16_t *buf);
-		int 	read_gyro(int16_t *buf);
-		int 	read_mag(int16_t *buf);
+		int 	read_acc(int16_t *buf, int num_samples);
+		int 	read_gyro(int16_t *buf, int num_samples);
+		int 	read_mag(int16_t *buf, int num_samples);
 
 };
 

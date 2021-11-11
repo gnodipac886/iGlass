@@ -1,34 +1,40 @@
 #include "iGlass.h"
-#include "iGlass_imu.h"
 
+//----------------------------------------------------------------------------------------------------------------------
+// BLE
+//----------------------------------------------------------------------------------------------------------------------
+iGlass_ble 	ble_i;
+int 		imu_char_idx, tmp_char_idx, clr_char_idx, mic_char_idx;
+int16_t 	ble_IMU_buf[BLE_IMU_BUF_SIZE];
+int			ble_imu_buf_idx = 0;
+
+//----------------------------------------------------------------------------------------------------------------------
+// IMU
+//----------------------------------------------------------------------------------------------------------------------
 iGlass_imu imu_i;
+
+//----------------------------------------------------------------------------------------------------------------------
+// unittesting
+//----------------------------------------------------------------------------------------------------------------------
+iGlass_unittest unittest_i;
 
 void setup() {
 	#if DEBUG
 		if (!Serial) {
 			Serial.begin(115200);
-			// while (!Serial);
+			while (!Serial);
 		}
 	#endif
 
 	pinMode(LED_BUILTIN, OUTPUT);
 
-	imu_i = iGlass_imu();
-	imu_i.init();
-}
-
-void IMU_TEST() {
-	// Serial.println("test");
-	// int16_t buf[32 * 3];
-	// int pts = imu_i.read(buf, ACC);
-
-	#if DEBUG
-		// Serial.println("IMU test case, points: " + String(pts) + "/32");
-		imu_i.print();
-	#endif
+	unittest_i = iGlass_unittest();
+	unittest_i.init();
+	// unittest_i.unittest_imu();
+	// unittest_i.unittest_ble();
+	unittest_i.unittest_all();
 }
 
 void loop() {
-	IMU_TEST();
-	delay(1000);
+	
 }

@@ -39,39 +39,41 @@ void iGlass_imu::init() {
 	Input:		buf - ptr to data buffer; sensor - ACC/GYRO/MAG  
 	Ret Val: 	num of sensor data pts read
 */
-int iGlass_imu::read(int16_t * buf, int sensor) {
-	int pts_read;
+int iGlass_imu::read(int16_t * buf, int num_samples, int sensor) {
+	int samples_read;
 	switch(sensor) {
 		case ACC:
-			pts_read = read_acc(buf);
+			samples_read = read_acc(buf, num_samples);
 			break;
 		case GYRO:
-			pts_read = read_gyro(buf);
+			samples_read = read_gyro(buf, num_samples);
 			break;
 		case MAG:
-			pts_read = read_mag(buf);
+			samples_read = read_mag(buf, num_samples);
 			break;
 
 		default:
-			pts_read = 0;
+			samples_read = 0;
 			break;
 	}
 
-	return pts_read;
+	return samples_read;
 }
 
 /*
 	Function:	Reads accelerometer data to buffer; helper function to read
 	Input:		buf - ptr to data buffer
-	Ret Val: 	num of acceleromter data pts read
+				num_samples - number of 16-bit samples to read
+	Ret Val: 	num of acceleromter 16-bit data read
 */
-int iGlass_imu::read_acc(int16_t * buf) {
-	if (IMU.accelerationAvailable() == IMU_FIFO_SIZE) {
-		for (int i = 0; i < IMU_FIFO_SIZE; i++) {
+int iGlass_imu::read_acc(int16_t * buf, int num_samples) {
+	int pts_to_read = min(int(num_samples / 3), IMU_FIFO_SIZE);
+	if (IMU.accelerationAvailable() >= pts_to_read) {
+		for (int i = 0; i < pts_to_read; i++) {
 			IMU.readRawAccelInt16(buf[i * 3], buf[i * 3 + 1], buf[i * 3 + 2]);
 			//buf[i] = sqrt(square(ax_WEIGHT * ax) + square(ay_WEIGHT * ay) + square(az_WEIGHT * az))
 		}
-		return IMU_FIFO_SIZE;
+		return pts_to_read*3;
 	}
 	return 0;
 }
@@ -79,15 +81,17 @@ int iGlass_imu::read_acc(int16_t * buf) {
 /*
 	Function:	Reads gyroscope data to buffer; helper function to read
 	Input:		buf - ptr to data buffer
-	Ret Val: 	num of gyroscope data pts read
+				num_samples - number of 16-bit samples to read
+	Ret Val: 	num of gyroscope 16-bit data read
 */
-int iGlass_imu::read_gyro(int16_t * buf) {
-	if (IMU.gyroscopeAvailable() == IMU_FIFO_SIZE) {
-		for (int i = 0; i < IMU_FIFO_SIZE; i++) {
+int iGlass_imu::read_gyro(int16_t * buf, int num_samples) {
+	int pts_to_read = min(int(num_samples / 3), IMU_FIFO_SIZE);
+	if (IMU.gyroscopeAvailable() >= pts_to_read) {
+		for (int i = 0; i < pts_to_read; i++) {
 			IMU.readRawGyroInt16(buf[i * 3], buf[i * 3 + 1], buf[i * 3 + 2]);
 			//buf[i] = sqrt(square(ax_WEIGHT * ax) + square(ay_WEIGHT * ay) + square(az_WEIGHT * az))
 		}
-		return IMU_FIFO_SIZE;
+		return pts_to_read*3;
 	}
 	return 0;
 }
@@ -95,12 +99,13 @@ int iGlass_imu::read_gyro(int16_t * buf) {
 /*
 	Function:	Reads magnetometer data to buffer; helper function to read
 	Input:		buf - ptr to data buffer 
+				num_samples - number of samples to read, here we only ever read 1 sample
 	Ret Val: 	num of magnetometer data pts read
 */
-int iGlass_imu::read_mag(int16_t * buf) {
+int iGlass_imu::read_mag(int16_t * buf, int num_samples) {
 	if (IMU.magnetAvailable()) {
 		IMU.readRawMagnetInt16(buf[0], buf[1], buf[2]);
-		return 1;
+		return 3;
 	}
 	return 0;
 }
@@ -114,11 +119,7 @@ void iGlass_imu::end() {
 	if (imu_setup_flag == 0)
 		return;
 
-	#if DEBUG
-		Serial.println("In IMU end");
-		IMU.end();
-		Serial.println("IMU ended!!!");
-	#endif
+	IMU.end();
 
 	imu_setup_flag = 0;
 }
