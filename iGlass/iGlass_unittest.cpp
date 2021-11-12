@@ -47,11 +47,19 @@ int iGlass_unittest::unittest_imu() {
 		Serial.println("Before IMU read...");
 	#endif
 	
-	int read_works = imu_i.read(imu_data_buf, IMU_FIFO_SIZE*3, ACC) + imu_i.read(imu_data_buf, IMU_FIFO_SIZE*3, GYRO) + imu_i.read(imu_data_buf, 3, MAG);
+	bool read_acc_works = (imu_i.read(imu_data_buf, IMU_FIFO_SIZE*3, ACC) != 0);
+	bool read_gyro_works = (imu_i.read(imu_data_buf, IMU_FIFO_SIZE*3, GYRO) != 0);
+	bool read_mag_works = (imu_i.read(imu_data_buf, IMU_FIFO_SIZE*3, MAG) != 0);
 
 	imu_i.end();
 
-	if (read_works) {
+	#if DEBUG
+		if (!read_acc_works) Serial.println("IMU read ACC failed...");
+		if (!read_gyro_works) Serial.println("IMU read GYRO failed...");
+		if (!read_mag_works) Serial.println("IMU read MAG failed...");
+	#endif
+
+	if (read_acc_works && read_gyro_works && read_mag_works) {
 		#if DEBUG
 			Serial.println("IMU test succeeded!");
 		#endif
