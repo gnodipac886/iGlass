@@ -8,6 +8,7 @@ int 		imu_char_idx, tmp_char_idx, clr_char_idx, mic_char_idx;
 int16_t 	ble_IMU_buf[BLE_IMU_BUF_SIZE];
 int			ble_imu_buf_idx = 0;
 int 		angle_char_idx = 0;
+int     acc_gyro_char_idx = 0;
 
 //----------------------------------------------------------------------------------------------------------------------
 // IMU
@@ -29,14 +30,17 @@ void setup() {
 
 	pinMode(LED_BUILTIN, OUTPUT);
 
-	setup_ble_angle();
+	//setup_ble_angle();
+	setup_ble_acc_gyro();
 	// unittest_i = iGlass_unittest();
 	// unittest_i.init();
 	// unittest_i.unittest_imu();
 	// unittest_i.unittest_ble();
 	// unittest_i.unittest_all();
 
-	
+	#if DEBUG
+		Serial.println("BLE setup flag: " + String(ble_i.isSetup()));
+	#endif
 }
 
 void setup_ble_angle() {
@@ -45,6 +49,15 @@ void setup_ble_angle() {
 	
 	ble_i = iGlass_ble();
 	angle_char_idx = ble_i.addNewCharacteristic(sizeof(int8_t));
+	ble_i.init();
+}
+
+void setup_ble_acc_gyro() {
+	imu_i = iGlass_imu();
+	imu_i.init();
+	
+	ble_i = iGlass_ble();
+	acc_gyro_char_idx = ble_i.addNewCharacteristic(int(BLE_IMU_BUF_SIZE/6)*6*sizeof(int16_t));
 	ble_i.init();
 }
 
@@ -100,6 +113,43 @@ void update_ble_rounded_angle(){
 	}
 } 
 
+/*
+	Function:	Update IMU accelerometer and gyroscope values; Sends 3-degrees of accelerometer samples alternating with 3-degress of gyroscope samples, if updated, via BLE
+	Input:		None  
+	Ret Val: 	None
+*/
+void update_ble_acc_gyro(){
+	static int acc_gyro_buf_idx = 0;
+	static int16_t acc_gyro_buf[int(BLE_IMU_BUF_SIZE/6)*6];		//3-degrees of ACC; 3-degrees of GYRO
+
+	bool read_acc_works = imu_i.read(&acc_gyro_buf[acc_gyro_buf_idx],3,ACC) != 0;
+	bool read_gyro_works = imu_i.read(&acc_gyro_buf[acc_gyro_buf_idx+3],3,GYRO) != 0;
+
+	if (!read_acc_works && !read_gyro_works) {
+		#if DEBUG
+			Serial.println("No acc_gyro samples read!");
+		#endif
+		return;
+	}
+
+	acc_gyro_buf_idx += 6;
+
+	if (ble_i.available() && acc_gyro_buf_idx == int(BLE_IMU_BUF_SIZE/6)*6) {
+		#if DEBUG
+			Serial.println("BLE write!");
+		#endif
+		ble_i.write(acc_gyro_char_idx, (int8_t *)acc_gyro_buf, sizeof(acc_gyro_buf));
+		acc_gyro_buf_idx = 0;
+		memset(acc_gyro_buf,0,sizeof(acc_gyro_buf));
+	} else if (acc_gyro_buf_idx == int(BLE_IMU_BUF_SIZE/6)*6) {
+		acc_gyro_buf_idx = 0;
+		#if DEBUG
+			Serial.println("Ble not available");
+		#endif
+	}
+}
+
 void loop() {
-	update_ble_rounded_angle();
+	//update_ble_rounded_angle();
+	update_ble_acc_gyro();
 }

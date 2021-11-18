@@ -25,6 +25,7 @@ class iGlass_ble {
 		void 		end();
 		int 		addNewCharacteristic(int buf_size);
 		bool		available();
+		int 		isSetup();
 
 	private:
 		int 		ble_char_idx = 0;			// keeps track of next available characteristic index

@@ -27,6 +27,9 @@ void iGlass_ble::init() {
 	ble_setup_flag = 1;
 }
 
+int iGlass_ble::isSetup() {
+	return ble_setup_flag;
+}
 
 /*
 	Function: 	add new characteristic to the ble stack
@@ -42,7 +45,7 @@ int iGlass_ble::addNewCharacteristic(int buf_size) {
 }
 
 /*
-	Function: 	Begin and setup current instance of IMU
+	Function: 	Begin and setup current instance of IMU????????????????????
 	Input: 		char_idx - one-past-filled idx of buf ; 
 				buf - buffer we want to copy to
 				buf_size - number of bytes to write
