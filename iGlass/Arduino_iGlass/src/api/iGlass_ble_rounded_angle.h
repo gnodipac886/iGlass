@@ -8,8 +8,6 @@
 class iGlass_ble_rounded_angle : public iGlass_api
 {
 	public:
-		iGlass_ble_rounded_angle();
-		~iGlass_ble_rounded_angle();
 		void init();
 		void main_task();
 

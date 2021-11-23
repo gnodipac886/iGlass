@@ -9,6 +9,7 @@ class iGlass_api {
 		virtual void main_task() = 0;
 };
 
-iGlass_api::~iGlass_api(){}
+// iGlass_api::iGlass_api(){}
+// iGlass_api::~iGlass_api(){}
 
 #endif

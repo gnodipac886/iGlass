@@ -1,4 +1,4 @@
-#include "iGlass_ble_imu.h"
+#include "iGlass_ble_send_imu.h"
 
 void iGlass_ble_send_imu::init()
 {
