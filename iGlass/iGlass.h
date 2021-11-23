@@ -1,9 +1,9 @@
 #ifndef iGLASS_H
 #define iGLASS_H
 
-#include "iGlass_imu.h"
-#include "iGlass_ble.h"
-#include "iGlass_unittest.h"
+#include "hardware/iGlass_imu.h"
+#include "hardware/iGlass_ble.h"
+#include "unittest/iGlass_unittest.h"
 
 #define DEBUG 							0
 
