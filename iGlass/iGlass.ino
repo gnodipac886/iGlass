@@ -1,6 +1,8 @@
-#include "iGlass.h"
-#include "iGlass_ble_send_imu.h"
-#include "iGlass_ble_rounded_angle.h"
+// #include "src/iGlass.h"
+// #include "src/api/iGlass_ble_rounded_angle.h"
+// #include "srciGlass_ble_rounded_angle.h"
+#include <iGlass.h>
+
 //----------------------------------------------------------------------------------------------------------------------
 // BLE
 //----------------------------------------------------------------------------------------------------------------------
@@ -9,10 +11,6 @@
 // IMU
 //----------------------------------------------------------------------------------------------------------------------
 
-//----------------------------------------------------------------------------------------------------------------------
-// unittesting
-//----------------------------------------------------------------------------------------------------------------------
-iGlass_unittest unittest_i;
 iGlass_ble_send_imu ble_send_imu_i;
 iGlass_ble_rounded_angle rounded_angle_i;
 
@@ -33,7 +31,7 @@ void setup() {
 	// unittest_i.unittest_all();
 
 	ble_send_imu_i = iGlass_ble_send_imu();
-	rounded_angle_i = iGlass_ble_rounded_angle();
+	// rounded_angle_i = iGlass_ble_rounded_angle();
 
 	ble_send_imu_i.init();
 	// rounded_angle_i.init();
