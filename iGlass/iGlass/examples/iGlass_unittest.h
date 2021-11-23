@@ -2,9 +2,9 @@
 #define iGLASS_UNITTEST_H
 
 #include "arduino.h"
-#include "iGlass.h"
-#include "iGlass_ble.h"
-#include "iGlass_imu.h"
+#include "../src/Arduino_iGlass.h"
+#include "../src/hardware/iGlass_ble.h"
+#include "../src/hardware/iGlass_imu.h"
 
 #define SUCCESS 1
 #define FAIL 	0
