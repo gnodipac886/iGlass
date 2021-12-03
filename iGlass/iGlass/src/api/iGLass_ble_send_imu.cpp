@@ -1,6 +1,10 @@
 #include "iGlass_ble_send_imu.h"
 
-iGlass_ble_send_imu::iGlass_ble_send_imu() : iGlass_api(), imu_buf_arr{acc_buf, gyro_buf, mag_buf}, imu_buf_idx_arr{0, 0, 0}, imu_buf_size_arr{ACC_BUF_SIZE, GYRO_BUF_SIZE, MAG_BUF_SIZE} {
+iGlass_ble_send_imu::iGlass_ble_send_imu() : iGlass_api(), 
+	imu_buf_arr{acc_buf, gyro_buf, mag_buf}, 
+	imu_buf_idx_arr{0, 0, 0}, 
+	imu_buf_size_arr{ACC_BUF_SIZE, GYRO_BUF_SIZE, MAG_BUF_SIZE} {
+
 	memset(acc_buf, 0, sizeof(acc_buf));
 	memset(gyro_buf, 0, sizeof(gyro_buf));
 	memset(mag_buf, 0, sizeof(mag_buf));
@@ -29,8 +33,8 @@ void iGlass_ble_send_imu::main_task() {
 */
 void iGlass_ble_send_imu::update_ble_imu(){
 	if (ble_i.available()) {	//continue to update buffers
-		update_ble_imu_char(ACC);
-		update_ble_imu_char(GYRO);
+		//update_ble_imu_char(ACC);
+		//update_ble_imu_char(GYRO);
 		update_ble_imu_char(MAG);
 		Serial.println("ble available");
 	} else {
@@ -46,11 +50,14 @@ void iGlass_ble_send_imu::update_ble_imu_char(int sensor) {
 	if (sensor == 1) Serial.println("GYRO");
 	if (sensor == 2) Serial.println("MAG");
 	Serial.println("----" + String(imu_buf_idx_arr[sensor]));
-	int i = imu_i.read(&((imu_buf_arr[sensor])[imu_buf_idx_arr[sensor]]),3,sensor);
-	Serial.println("i: " + int(i));
-	if (i)	
-		imu_buf_idx_arr[sensor] += 3;
-		Serial.println("buf idx: " + String(imu_buf_idx_arr[sensor]));
+	if (imu_buf_idx_arr[sensor] <= imu_buf_size_arr[sensor] - 3){
+		int i = imu_i.read(&imu_buf_arr[sensor][imu_buf_idx_arr[sensor]], 3, sensor);
+		Serial.println("i: " + String(i));
+		if (i == 3) {
+			imu_buf_idx_arr[sensor] += 3;
+			Serial.println("buf idx: " + String(imu_buf_idx_arr[sensor]));
+		}
+	}
 	Serial.println("before write and clear!!!!!!!!!!!");
 	if (imu_buf_idx_arr[sensor] == imu_buf_size_arr[sensor]) {
 		Serial.println("before write!!!");

@@ -108,7 +108,9 @@ int iGlass_imu::read_gyro(int16_t * buf, int num_samples) {
 */
 int iGlass_imu::read_mag(int16_t * buf, int num_samples) {
 	if (IMU.magnetAvailable()) {
-		IMU.readRawMagnetInt16(buf[0], buf[1], buf[2]);
+		Serial.println("magnetAvailable");
+		int i = IMU.readRawMagnetInt16(buf[0], buf[1], buf[2]);	//.....................
+		Serial.println("readRawMagnetint16 return val: " + String(i));	//..........................
 		return 3;
 	}
 	return 0;
