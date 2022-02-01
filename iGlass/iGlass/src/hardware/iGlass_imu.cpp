@@ -75,6 +75,8 @@ int iGlass_imu::read_acc(int16_t * buf, int num_samples) {
 	if (IMU.accelerationAvailable() >= pts_to_read) {
 		for (int i = 0; i < pts_to_read; i++) {
 			IMU.readRawAccelInt16(buf[i * 3], buf[i * 3 + 1], buf[i * 3 + 2]);
+			// if(i == 0)
+				// Serial.println("read_acc: " + String(buf[i * 3]) + " " + String(buf[i * 3 + 1]) + " " + String(buf[i * 3 + 2]));
 			//buf[i] = sqrt(square(ax_WEIGHT * ax) + square(ay_WEIGHT * ay) + square(az_WEIGHT * az))
 		}
 		return pts_to_read*3;
@@ -108,9 +110,9 @@ int iGlass_imu::read_gyro(int16_t * buf, int num_samples) {
 */
 int iGlass_imu::read_mag(int16_t * buf, int num_samples) {
 	if (IMU.magnetAvailable()) {
-		Serial.println("magnetAvailable");
+		// Serial.println("magnetAvailable");
 		int i = IMU.readRawMagnetInt16(buf[0], buf[1], buf[2]);	//.....................
-		Serial.println("readRawMagnetint16 return val: " + String(i));	//..........................
+		// Serial.println("readRawMagnetint16 return val: " + String(i));	//..........................
 		return 3;
 	}
 	return 0;

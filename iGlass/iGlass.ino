@@ -3,6 +3,8 @@
 // #include "srciGlass_ble_rounded_angle.h"
 #include <iGlass.h>
 
+#define DEBUG 0
+
 iGlass_ble_send_imu ble_send_imu_i;
 iGlass_ble_rounded_angle rounded_angle_i;
 
@@ -29,7 +31,7 @@ void setup() {
 	// rounded_angle_i.init();
 
 	#if DEBUG
-		Serial.println("BLE setup flag: " + String(ble_i.isSetup()));
+		// Serial.println("BLE setup flag: " + String(ble_i.isSetup()));
 	#endif
 }
 

@@ -26,13 +26,13 @@ class iGlass_ble_send_imu : public iGlass_api {
 		iGlass_ble ble_i;
 		iGlass_imu imu_i;
 
-		int16_t acc_buf[ACC_BUF_SIZE];			//3-degrees of ACC; 120 = int(BLE_IMU_BUF_SIZE/3)*3
-		int16_t gyro_buf[GYRO_BUF_SIZE];		//3-degrees of GYRO
-		int16_t mag_buf[MAG_BUF_SIZE+6];		//3-degrees of MAG
+		int16_t * acc_buf; //[ACC_BUF_SIZE];			//3-degrees of ACC; 120 = int(BLE_IMU_BUF_SIZE/3)*3
+		int16_t * gyro_buf; //[GYRO_BUF_SIZE];		//3-degrees of GYRO
+		int16_t * mag_buf; //[MAG_BUF_SIZE+6];		//3-degrees of MAG
 
-		int16_t * imu_buf_arr[NUM_IMU_SENSORS];	// ptr to ACC buf, ptr to GYRO buf, ptr to MAG bug
+		int16_t * imu_buf_arr[NUM_IMU_SENSORS]; // = {acc_buf, gyro_buf, mag_buf};	// ptr to ACC buf, ptr to GYRO buf, ptr to MAG bug
 		int imu_buf_idx_arr[NUM_IMU_SENSORS];	// ACC buf idx, GYRO buf idx, MAG buf idx
-		int imu_buf_size_arr[NUM_IMU_SENSORS];	// ACC max buf size, GYRO max buf size, MAG max buf size
+		int imu_buf_size_arr[NUM_IMU_SENSORS] = {ACC_BUF_SIZE, GYRO_BUF_SIZE, MAG_BUF_SIZE};	// ACC max buf size, GYRO max buf size, MAG max buf size
 		int imu_char_idx_arr[NUM_IMU_SENSORS];	// ACC ble char idx, GYRO ble char idx, MAG ble char idx
 };
 
