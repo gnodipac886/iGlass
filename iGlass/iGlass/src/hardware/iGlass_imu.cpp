@@ -33,8 +33,11 @@ void iGlass_imu::init() {
 	IMU.setAccelSlope(1, 1, 1);	 //   uncalibrated <--------- can use instead of weights?..........
 
 	IMU.setGyroFS(2);			 // Full Scale's multiplication factor is +-8g (does not change output of read functions, just assigns more/less bits to sensor measurement)
+	IMU.setGyroODR(5);
 	IMU.setGyroOffset(-2.10,-0.11, -0.005); //   uncalibrated <---------why? because diff for walk/talk?...................
 	IMU.setGyroSlope(1.1675, 1.165, 1.160);	 //   uncalibrated <--------- can use instead of weights?..........
+
+	// IMU.setMagnetODR(8);
 	imu_setup_flag = 1;
 }
 
@@ -65,6 +68,22 @@ int iGlass_imu::read(int16_t * buf, int num_samples, int sensor) {
 }
 
 /*
+	Function:	Reads accelerometer and gyroscope data to buffer; helper function to read
+	Input:		buf - ptr to data buffer
+				num_samples - number of 16-bit samples to read
+	Ret Val: 	num of acceleromter 16-bit data read
+*/
+int iGlass_imu::read_acc_gyro(int16_t * acc_buf, int16_t * gyro_buf, int num_samples) {
+	int pts_to_read = min(int(num_samples / 3), IMU_FIFO_SIZE);
+	int pts_read = 0;
+	if (IMU.accelerationAvailable() >= pts_to_read) {
+		pts_read = IMU.readMultiRawGyroAccelInt16(acc_buf, gyro_buf, pts_to_read);
+		return pts_read*3;
+	}
+	return 0;
+}
+
+/*
 	Function:	Reads accelerometer data to buffer; helper function to read
 	Input:		buf - ptr to data buffer
 				num_samples - number of 16-bit samples to read
@@ -72,14 +91,12 @@ int iGlass_imu::read(int16_t * buf, int num_samples, int sensor) {
 */
 int iGlass_imu::read_acc(int16_t * buf, int num_samples) {
 	int pts_to_read = min(int(num_samples / 3), IMU_FIFO_SIZE);
+	int pts_read = 0;
 	if (IMU.accelerationAvailable() >= pts_to_read) {
 		for (int i = 0; i < pts_to_read; i++) {
-			IMU.readRawAccelInt16(buf[i * 3], buf[i * 3 + 1], buf[i * 3 + 2]);
-			// if(i == 0)
-				// Serial.println("read_acc: " + String(buf[i * 3]) + " " + String(buf[i * 3 + 1]) + " " + String(buf[i * 3 + 2]));
-			//buf[i] = sqrt(square(ax_WEIGHT * ax) + square(ay_WEIGHT * ay) + square(az_WEIGHT * az))
+			pts_read += IMU.readRawAccelInt16(buf[i * 3], buf[i * 3 + 1], buf[i * 3 + 2]);
 		}
-		return pts_to_read*3;
+		return pts_read*3;
 	}
 	return 0;
 }
@@ -92,12 +109,13 @@ int iGlass_imu::read_acc(int16_t * buf, int num_samples) {
 */
 int iGlass_imu::read_gyro(int16_t * buf, int num_samples) {
 	int pts_to_read = min(int(num_samples / 3), IMU_FIFO_SIZE);
+	int pts_read = 0;
 	if (IMU.gyroscopeAvailable() >= pts_to_read) {
 		for (int i = 0; i < pts_to_read; i++) {
-			IMU.readRawGyroInt16(buf[i * 3], buf[i * 3 + 1], buf[i * 3 + 2]);
+			pts_read += IMU.readRawGyroInt16(buf[i * 3], buf[i * 3 + 1], buf[i * 3 + 2]);
 			//buf[i] = sqrt(square(ax_WEIGHT * ax) + square(ay_WEIGHT * ay) + square(az_WEIGHT * az))
 		}
-		return pts_to_read*3;
+		return pts_read*3;
 	}
 	return 0;
 }

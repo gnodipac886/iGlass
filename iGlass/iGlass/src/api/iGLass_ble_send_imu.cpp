@@ -12,9 +12,9 @@ iGlass_ble_send_imu::iGlass_ble_send_imu() : iGlass_api(),
 	imu_buf_arr[0] = acc_buf;
 	imu_buf_arr[1] = gyro_buf;
 	imu_buf_arr[2] = mag_buf;
-	memset(acc_buf, 0, sizeof(acc_buf));
-	memset(gyro_buf, 0, sizeof(gyro_buf));
-	memset(mag_buf, 0, sizeof(mag_buf));
+	clear_buf(ACC);
+	clear_buf(GYRO);
+	clear_buf(MAG);
 }
 
 void iGlass_ble_send_imu::init()
@@ -40,8 +40,7 @@ void iGlass_ble_send_imu::main_task() {
 */
 void iGlass_ble_send_imu::update_ble_imu(){
 	if (ble_i.available()) {	//continue to update buffers
-		update_ble_imu_char(ACC);
-		update_ble_imu_char(GYRO);
+		update_ble_imu_char_accgyro(ACCGYRO);
 		update_ble_imu_char(MAG);
 	} else {
 		clear_buf(ACC);
@@ -50,14 +49,31 @@ void iGlass_ble_send_imu::update_ble_imu(){
 	}
 }
 
+void iGlass_ble_send_imu::update_ble_imu_char_accgyro(int sensor) {
+	if (imu_buf_idx_arr[ACC] < imu_buf_size_arr[ACC]){
+		int read_size = min(NUM_AXIS * IMU_FIFO_SIZE, imu_buf_size_arr[ACC] - imu_buf_idx_arr[ACC]);
+		int i = imu_i.read_acc_gyro(&imu_buf_arr[ACC][imu_buf_idx_arr[ACC]], &imu_buf_arr[GYRO][imu_buf_idx_arr[GYRO]], read_size);
+		imu_buf_idx_arr[ACC] += i;
+		imu_buf_idx_arr[GYRO] += i;
+	}
+	if (imu_buf_idx_arr[ACC] == imu_buf_size_arr[ACC]) {
+		ble_i.write(imu_char_idx_arr[ACC], (int8_t *)imu_buf_arr[ACC], imu_buf_size_arr[ACC]);
+		clear_buf(ACC);
+	}
+	if (imu_buf_idx_arr[GYRO] == imu_buf_size_arr[GYRO]) {
+		ble_i.write(imu_char_idx_arr[GYRO], (int8_t *)imu_buf_arr[GYRO], imu_buf_size_arr[GYRO]);
+		clear_buf(GYRO);
+	}
+}
+
+
 void iGlass_ble_send_imu::update_ble_imu_char(int sensor) {
-	// if (imu_buf_idx_arr[sensor] < imu_buf_size_arr[sensor]){
-		int i = imu_i.read(&imu_buf_arr[sensor][imu_buf_idx_arr[sensor]], 3, sensor);
-		imu_buf_idx_arr[sensor] += NUM_AXIS;
-		// Serial.println("First one: " + String(imu_buf_arr[sensor][0]) + " ten: " + String(imu_buf_arr[sensor][10]));
-	// }
+	if (imu_buf_idx_arr[sensor] < imu_buf_size_arr[sensor]){
+		int read_size = min(NUM_AXIS * IMU_FIFO_SIZE, imu_buf_size_arr[sensor] - imu_buf_idx_arr[sensor]);
+		int i = imu_i.read(&imu_buf_arr[sensor][imu_buf_idx_arr[sensor]], read_size, sensor);
+		imu_buf_idx_arr[sensor] += i;
+	}
 	if (imu_buf_idx_arr[sensor] == imu_buf_size_arr[sensor]) {
-		// Serial.println("sending");
 		clear_buf(sensor);
 		ble_i.write(imu_char_idx_arr[sensor], (int8_t *)imu_buf_arr[sensor], imu_buf_size_arr[sensor]);
 		clear_buf(sensor);

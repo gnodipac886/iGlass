@@ -21,6 +21,7 @@ class iGlass_ble_send_imu : public iGlass_api {
 	private:
 		void update_ble_imu();
 		void update_ble_imu_char(int sensor);
+		void update_ble_imu_char_accgyro(int sensor);
 		void clear_buf(int sensor);
 
 		iGlass_ble ble_i;
