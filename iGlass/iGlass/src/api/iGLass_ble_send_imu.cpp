@@ -23,9 +23,9 @@ void iGlass_ble_send_imu::init()
 	imu_i.init();
 
 	ble_i = iGlass_ble();
-	imu_char_idx_arr[ACC] = ble_i.addNewCharacteristic(ACC_BUF_SIZE * sizeof(int16_t));
-	imu_char_idx_arr[GYRO] = ble_i.addNewCharacteristic(GYRO_BUF_SIZE * sizeof(int16_t));
-	imu_char_idx_arr[MAG] = ble_i.addNewCharacteristic(MAG_BUF_SIZE * sizeof(int16_t));
+	imu_char_idx_arr[ACC] = ble_i.addNewCharacteristic(2 * NUM_AXIS);//ACC_BUF_SIZE * sizeof(int16_t));
+	imu_char_idx_arr[GYRO] = ble_i.addNewCharacteristic(2 * NUM_AXIS);//GYRO_BUF_SIZE * sizeof(int16_t));
+	imu_char_idx_arr[MAG] = ble_i.addNewCharacteristic(2 * NUM_AXIS);//MAG_BUF_SIZE * sizeof(int16_t));
 	ble_i.init();
 }
 
@@ -40,8 +40,9 @@ void iGlass_ble_send_imu::main_task() {
 */
 void iGlass_ble_send_imu::update_ble_imu(){
 	if (ble_i.available()) {	//continue to update buffers
-		update_ble_imu_char_accgyro(ACCGYRO);
-		update_ble_imu_char(MAG);
+		if (update_ble_imu_char_accgyro(ACCGYRO)){
+			update_ble_imu_char(MAG);
+		}
 	} else {
 		clear_buf(ACC);
 		clear_buf(GYRO);
@@ -49,35 +50,44 @@ void iGlass_ble_send_imu::update_ble_imu(){
 	}
 }
 
-void iGlass_ble_send_imu::update_ble_imu_char_accgyro(int sensor) {
+int iGlass_ble_send_imu::update_ble_imu_char_accgyro(int sensor) {
+	int samples_read;
 	if (imu_buf_idx_arr[ACC] < imu_buf_size_arr[ACC]){
 		int read_size = min(NUM_AXIS * IMU_FIFO_SIZE, imu_buf_size_arr[ACC] - imu_buf_idx_arr[ACC]);
-		int i = imu_i.read_acc_gyro(&imu_buf_arr[ACC][imu_buf_idx_arr[ACC]], &imu_buf_arr[GYRO][imu_buf_idx_arr[GYRO]], read_size);
-		imu_buf_idx_arr[ACC] += i;
-		imu_buf_idx_arr[GYRO] += i;
+		read_size = 3; // override for sahil
+		samples_read = imu_i.read_acc_gyro(&imu_buf_arr[ACC][imu_buf_idx_arr[ACC]], &imu_buf_arr[GYRO][imu_buf_idx_arr[GYRO]], read_size);
+		imu_buf_idx_arr[ACC] += samples_read;
+		imu_buf_idx_arr[GYRO] += samples_read;
+		// Serial.println("updated ACC and GYRO");
 	}
-	if (imu_buf_idx_arr[ACC] == imu_buf_size_arr[ACC]) {
-		ble_i.write(imu_char_idx_arr[ACC], (int8_t *)imu_buf_arr[ACC], imu_buf_size_arr[ACC]);
+	if (imu_buf_idx_arr[ACC] == imu_buf_size_arr[ACC] || 3) { // override for sahil
+		ble_i.write(imu_char_idx_arr[ACC], (int8_t *)imu_buf_arr[ACC], 2 * imu_buf_idx_arr[ACC]); // override for sahil, used to be imu_buf_size last arg
 		clear_buf(ACC);
+		// Serial.println("sent ACC");
 	}
-	if (imu_buf_idx_arr[GYRO] == imu_buf_size_arr[GYRO]) {
-		ble_i.write(imu_char_idx_arr[GYRO], (int8_t *)imu_buf_arr[GYRO], imu_buf_size_arr[GYRO]);
+	if (imu_buf_idx_arr[GYRO] == imu_buf_size_arr[GYRO] || 3) { // override for sahil
+		ble_i.write(imu_char_idx_arr[GYRO], (int8_t *)imu_buf_arr[GYRO], 2 * imu_buf_idx_arr[GYRO]); // override for sahil, used to be imu_buf_size last arg
 		clear_buf(GYRO);
+		// Serial.println("sent GYRO");
 	}
+	// Serial.println("ACCGYRO Samples: " + String(samples_read));
+	return samples_read;
 }
 
 
-void iGlass_ble_send_imu::update_ble_imu_char(int sensor) {
+int iGlass_ble_send_imu::update_ble_imu_char(int sensor) {
+	int samples_read;
 	if (imu_buf_idx_arr[sensor] < imu_buf_size_arr[sensor]){
 		int read_size = min(NUM_AXIS * IMU_FIFO_SIZE, imu_buf_size_arr[sensor] - imu_buf_idx_arr[sensor]);
-		int i = imu_i.read(&imu_buf_arr[sensor][imu_buf_idx_arr[sensor]], read_size, sensor);
-		imu_buf_idx_arr[sensor] += i;
+		read_size = 3; // override for sahil
+		samples_read = imu_i.read(&imu_buf_arr[sensor][imu_buf_idx_arr[sensor]], read_size, sensor);
+		imu_buf_idx_arr[sensor] += samples_read;
 	}
-	if (imu_buf_idx_arr[sensor] == imu_buf_size_arr[sensor]) {
-		clear_buf(sensor);
-		ble_i.write(imu_char_idx_arr[sensor], (int8_t *)imu_buf_arr[sensor], imu_buf_size_arr[sensor]);
+	if (imu_buf_idx_arr[sensor] == imu_buf_size_arr[sensor] || 3) { // override for sahil
+		ble_i.write(imu_char_idx_arr[sensor], (int8_t *)imu_buf_arr[sensor], 2 * imu_buf_idx_arr[sensor]); // override for sahil, used to be imu_buf_size last arg
 		clear_buf(sensor);
 	}
+	return samples_read;
 }
 
 void iGlass_ble_send_imu::clear_buf(int sensor) {

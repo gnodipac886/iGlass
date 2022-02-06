@@ -28,16 +28,16 @@ void iGlass_imu::init() {
 
 	IMU.setContinuousMode();
 	IMU.setAccelFS(3);			 // Full Scale's multiplication factor is +-8g (does not change output of read functions, just assigns more/less bits to sensor measurement)
-	IMU.setAccelODR(5);			 // Sampling Rate is 476 Hz
+	IMU.setAccelODR(3);			 // Sampling Rate is 476 Hz
 	IMU.setAccelOffset(0, 0, 0); //   uncalibrated <---------why? because diff for walk/talk?...................
 	IMU.setAccelSlope(1, 1, 1);	 //   uncalibrated <--------- can use instead of weights?..........
 
 	IMU.setGyroFS(2);			 // Full Scale's multiplication factor is +-8g (does not change output of read functions, just assigns more/less bits to sensor measurement)
-	IMU.setGyroODR(5);
+	IMU.setGyroODR(3);
 	IMU.setGyroOffset(-2.10,-0.11, -0.005); //   uncalibrated <---------why? because diff for walk/talk?...................
 	IMU.setGyroSlope(1.1675, 1.165, 1.160);	 //   uncalibrated <--------- can use instead of weights?..........
 
-	// IMU.setMagnetODR(8);
+	IMU.setMagnetODR(8);
 	imu_setup_flag = 1;
 }
 
