@@ -78,6 +78,7 @@ class LSM9DS1Class {
     void setContinuousMode();
     void setOneShotMode();
     int getOperationalMode(); //0=off , 1= Accel only , 2= Gyro +Accel
+    int readMultiRawGyroAccelInt16(int16_t * acc_buf, int16_t * gyro_buf, int num_samples);
     // Accelerometer
     float accelOffset[3] = {0,0,0}; // zero point offset correction factor for calibration
     float accelSlope[3] = {1,1,1};  // slope correction factor for calibration

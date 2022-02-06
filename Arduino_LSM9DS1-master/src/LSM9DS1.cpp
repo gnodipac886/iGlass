@@ -297,10 +297,31 @@ int LSM9DS1Class::readRawGyroInt16(int16_t& x, int16_t& y, int16_t& z)   // retu
   return 1;
 }
 
+int LSM9DS1Class::readMultiRawGyroAccelInt16(int16_t * acc_buf, int16_t * gyro_buf, int num_samples)   // return raw data for calibration purposes, samples is a set xyz
+{ 
+  for (int i = 0; i < num_samples; i++) {
+    if (!readRegisters(LSM9DS1_ADDRESS, LSM9DS1_OUT_X_G, (uint8_t*)&gyro_buf[i * 3], 3 * sizeof(int16_t))){
+      return 0;
+    }
+    if (!readRegisters(LSM9DS1_ADDRESS, LSM9DS1_OUT_X_XL, (uint8_t*)&acc_buf[i * 3], 3 * sizeof(int16_t))){
+      return 0;
+    }
+  }
+  return num_samples;
+}
+
 int LSM9DS1Class::gyroAvailable()
 {
-  if (readRegister(LSM9DS1_ADDRESS, LSM9DS1_STATUS_REG) & 0x02) {
-    return 1;
+  if (continuousMode) {
+    // Read FIFO_SRC. If any of the rightmost 8 bits have a value, there is data.
+    int num = 0;
+    if (num = readRegister(LSM9DS1_ADDRESS, 0x2F) & 63) {
+      return num;
+    }
+  } else {
+    if (readRegister(LSM9DS1_ADDRESS, LSM9DS1_STATUS_REG) & 0x02) {
+      return 1;
+    }
   }
   return 0;
 }
@@ -438,8 +459,9 @@ int LSM9DS1Class::readRawMagnetInt16(int16_t& x, int16_t& y, int16_t& z)
 
 int LSM9DS1Class::magneticFieldAvailable()
 { //return (readRegister(LSM9DS1_ADDRESS_M, LSM9DS1_STATUS_REG_M) & 0x08)==0x08;
-  if (readRegister(LSM9DS1_ADDRESS_M, LSM9DS1_STATUS_REG_M) & 0x08) {
-    return 1;
+  int num = 0;
+  if (num = readRegister(LSM9DS1_ADDRESS_M, LSM9DS1_STATUS_REG_M) & 0x08) {
+    return num;
   }
   return 0;
 }
