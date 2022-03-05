@@ -2,12 +2,13 @@
 #define iGLASS_UNITTEST_H
 
 #include "arduino.h"
-#include "../src/Arduino_iGlass.h"
-#include "../src/hardware/iGlass_ble.h"
-#include "../src/hardware/iGlass_imu.h"
+#include "../hardware/iGlass_ble.h"
+#include "../hardware/iGlass_imu.h"
+#include "../hardware/iGlass_sd.h"
 
 #define SUCCESS 1
 #define FAIL 	0
+#define DEBUG 1
 
 class iGlass_unittest{
 	public:
@@ -16,9 +17,9 @@ class iGlass_unittest{
 		int unittest_imu();
 		int unittest_ble_send_imu();
 		int unittest_ble();
+		int unittest_sd();
 
 	private:
 };
-
 
 #endif

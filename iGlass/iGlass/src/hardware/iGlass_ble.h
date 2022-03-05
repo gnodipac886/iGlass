@@ -1,5 +1,5 @@
-#ifndef iGLASS_SD_H
-#define iGLASS_SD_H
+#ifndef iGLASS_BLE_H
+#define iGLASS_BLE_H
 
 #include "arduino.h"
 #include <ArduinoBLE.h>
@@ -28,9 +28,9 @@ class iGlass_ble {
 		int 		isSetup();
 
 	private:
-		int 		ble_char_idx = 0;			// keeps track of next available characteristic index
 		BLEDevice 	central;
 		BLECharacteristic * ble_des[MAX_NUM_CHAR];
+		int 		ble_char_idx = 0;			// keeps track of next available characteristic index
 		BLEService 	iGlass_ble_service;
 		int 		CENTRAL_FLAG = 0;
 		int 		char_uuid = 2713;

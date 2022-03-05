@@ -95,9 +95,9 @@ bool iGlass_ble::configure_ble() {
 }
 
 /*
-	Function: 	checks if the host if it is available
+	Function: 	checks if the host is available
 	Input: 		nothing
-	Ret Val: 	bool - return if host is connected
+	Ret Val: 	bool - return if host is connected or not
 */
 bool iGlass_ble::available() {
 	// listen for BLE peripherals to connect:
