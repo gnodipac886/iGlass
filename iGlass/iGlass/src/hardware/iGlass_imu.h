@@ -40,6 +40,7 @@
 #define ACC							0
 #define GYRO 						1
 #define MAG 						2
+#define ACCGYRO						3
 
 //----------------------------------------------------------------------------------------------------------------------
 // iGlass imu class
@@ -50,6 +51,7 @@ class iGlass_imu {
 		void 	end();
 		void 	print();
 		int 	read(int16_t * buf, int num_samples, int sensor);
+		int 	read_acc_gyro(int16_t * acc_buf, int16_t * gyro_buf, int num_samples);
 
 	private:
 		int 	imu_setup_flag;
