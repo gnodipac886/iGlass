@@ -5,7 +5,7 @@
 	#include "hardware/iGlass_ble.h"
 	#include "hardware/iGlass_imu.h"
 	#include "unittest/iGlass_unittest.h"
-	// #include "hardware/iGlass_mic.h"
+	#include "hardware/iGlass_mic.h"
 	// #include "hardware/iGlass_rgb.h"
 	// #include "hardware/iGlass_ir.h"
 	#include "hardware/iGlass_sd.h"
