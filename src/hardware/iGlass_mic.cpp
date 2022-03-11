@@ -55,6 +55,15 @@ int iGlass_mic::read(int16_t * buf, int num_samples){
 }
 
 /*
+	Function:	Nothing, placeholder
+	Input:		None
+	Ret Val: 	1 for success
+*/
+int iGlass_mic::write(){
+	return 1;
+}
+
+/*
 	Function:	Prints sensor data
 	Input:		None
 	Ret Val: 	None
