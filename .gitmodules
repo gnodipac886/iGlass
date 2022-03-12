@@ -1,0 +1,21 @@
+[submodule "deps/ArduinoBLE"]
+	path = deps/ArduinoBLE
+	url = https://github.com/arduino-libraries/ArduinoBLE.git
+[submodule "deps/Arduino_APDS9960"]
+	path = deps/Arduino_APDS9960
+	url = https://github.com/arduino-libraries/Arduino_APDS9960.git
+[submodule "deps/Arduino_HTS221"]
+	path = deps/Arduino_HTS221
+	url = https://github.com/arduino-libraries/Arduino_HTS221.git
+[submodule "deps/Arduino_LPS22HB"]
+	path = deps/Arduino_LPS22HB
+	url = https://github.com/arduino-libraries/Arduino_LPS22HB.git
+[submodule "deps/ArduinoCore-mbed"]
+	path = deps/ArduinoCore-mbed
+	url = https://github.com/arduino/ArduinoCore-mbed.git
+[submodule "deps/RGBLed"]
+	path = deps/RGBLed
+	url = https://github.com/wilmouths/RGBLed.git
+[submodule "deps/SdFat"]
+	path = deps/SdFat
+	url = https://github.com/greiman/SdFat.git
