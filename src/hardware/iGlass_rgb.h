@@ -11,9 +11,6 @@
 #define iGLASS_GREEN_PIN 		23
 #define iGLASS_BLUE_PIN 		24
 
-// const int iGLASS_RED_PIN = 			22;
-// const int iGLASS_GREEN_PIN = 		23;
-// const int iGLASS_BLUE_PIN = 		24;
 // #define DEBUG 					1
 
 

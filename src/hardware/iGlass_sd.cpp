@@ -1,5 +1,11 @@
 #include "iGlass_sd.h"
 
+
+/*
+	Function: 	setup iGlass_sd - detect SD card, initialize SD, reset/setup iGlass directory in SD card
+	Input: 		None
+	Ret Val: 	None
+*/
 void iGlass_sd::init() {
     if (sd_setup_flag == 1)
         return;
@@ -44,6 +50,12 @@ void iGlass_sd::init() {
     sd_setup_flag = 1;
 }
 
+
+/*
+	Function: 	clears/empties directory of SD card
+	Input: 		dir - the ExFile directory to clear
+	Ret Val: 	None
+*/
 void iGlass_sd::clearDirectory(ExFile dir) {
     while (true) {
         ExFile entry = dir.openNextFile();
@@ -63,14 +75,31 @@ void iGlass_sd::clearDirectory(ExFile dir) {
     }
 }
 
+/*
+	Function: 	Returns sd_setup_flag
+	Input: 		None
+	Ret Val: 	1 - init() was successfully run
+                0 - otherwise (init() was not called, init() was unsuccessful)
+*/
 bool iGlass_sd::isSetup() {                      
     return sd_setup_flag;
 }
 
+/*
+	Function: 	Returns card_present
+	Input: 		None
+	Ret Val: 	1 - SD card is detected (in SD card slot)
+                0 - otherwise
+*/
 bool iGlass_sd::available() {
     return card_present;       
 }
 
+/*
+	Function: 	Ends current instance of iGlass_sd
+	Input: 		None
+	Ret Val: 	None
+*/
 void iGlass_sd::end() {
 	if (sd_setup_flag == 0)
 		return;
@@ -82,6 +111,11 @@ void iGlass_sd::end() {
 	sd_setup_flag = 0;
 }
 
+/*
+	Function: 	close files in iGlass_sd directory (files added through the iGlass_sd instance)
+	Input: 		None
+	Ret Val: 	None
+*/
 void iGlass_sd::closeFiles() {
     for (int file_idx = 0; file_idx != sd_num_files; file_idx++) {
         file_des[file_idx]->file_ptr->close();
@@ -93,8 +127,12 @@ void iGlass_sd::closeFiles() {
     sd_num_files = 0;
 }
 
-
-void iGlass_sd::update_card_detect() {          //updates card_present, and then initializes SD if card_present = 1 meaning it is re-inserted
+/*
+	Function: 	updates card_present upon changes in card detection, and then initializes SD if card_present = 1 meaning it is re-inserted
+	Input: 		None
+	Ret Val: 	None
+*/
+void iGlass_sd::update_card_detect() {         
     card_present = digitalRead(CHIP_DETECT);
     if (card_present) {
         if (!SD.begin(SD_CONFIG)) {
@@ -106,7 +144,11 @@ void iGlass_sd::update_card_detect() {          //updates card_present, and then
     }
 }
 
-    
+/*
+	Function: 	add new file to iGlass_sd directory in SD card, with filename fname
+	Input: 		fname - filename of new file to be added
+	Ret Val:    successfully-added file's file_idx for the file descriptor array; -1 if unsuccessful
+*/
 int iGlass_sd::addNewFile(char * fname) { 
     //checks
     if (!isSetup()) {
@@ -163,6 +205,13 @@ int iGlass_sd::addNewFile(char * fname) {
     return sd_num_files++;
 }
 
+/*
+	Function: 	write to given file (indicated by file's idx to file descriptor array)
+	Input: 		f_num - file des array idx of the given file to write to
+                buf - ptr to buffer of data to copy from into the given file
+                buf_size - number of bytes to copy from given buffer
+	Ret Val:    number of bytes successfully written to given iGlass_sd file
+*/
 int iGlass_sd::write(int f_num, byte * buf, int buf_size) {
     //checks
     if (!isSetup()) {
@@ -219,6 +268,13 @@ int iGlass_sd::write(int f_num, byte * buf, int buf_size) {
     return total_bytes_written;
 }
 
+/*
+	Function: 	read from given file (indicated by file's idx to file descriptor array)
+	Input: 		f_num - file des array idx of the given file to read from
+                buf - ptr to buffer to copy the given file's data into                
+                buf_size - number of bytes to read from given file
+	Ret Val:    number of bytes successfully read from given iGlass_sd file
+*/
 int iGlass_sd::read(int f_num, byte * buf, int buf_size) { 
 	//checks
 	 if (!isSetup()) {

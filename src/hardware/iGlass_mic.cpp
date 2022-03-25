@@ -3,10 +3,9 @@
 static 		PDMClass	INT_MIC_PDM(PIN_PDM_DIN, PIN_PDM_CLK, PIN_PDM_PWR);
 static 		PDMClass  	EXT_MIC_PDM(D8, D7, D6);
 
-int16_t * 		_buf 			= NULL;
-volatile int 	_samples_read 	= 1;
+int16_t * 		_buf 			= nullptr;
+volatile int 	_samples_read 	= 0;
 PDMClass 		PDM 			= EXT_MIC_PDM;
-volatile int 	_mic_int		= 0;
 
 void _onPDMdata();
 
@@ -43,7 +42,7 @@ void iGlass_mic::init(){
 /*
 	Function:	Reads sensor data to buffer
 	Input:		buf - ptr to data buffer
-				num_samples number of samples to read, should be the same as _samples_read
+				num_samples - number of samples to read, should be the same as _samples_read
 	Ret Val: 	num of sensor data pts read
 */
 int iGlass_mic::read(int16_t * buf, int num_samples){
@@ -82,11 +81,11 @@ void iGlass_mic::print() {
 }
 
 /*
-	Function:	Gets the number of samples read
+	Function:	Returns the number of samples read
 	Input:		None
 	Ret Val: 	number of samples read
 */
-int iGlass_mic::get_samples_read() {
+int iGlass_mic::num_samples_read() {
 	return _samples_read;
 }
 
@@ -107,6 +106,7 @@ int16_t * iGlass_mic::get_buf() {
 void iGlass_mic::end(){
 	PDM.end();
 	delete(_buf);
+	_buf = nullptr;
 }
 
 /*
@@ -123,6 +123,4 @@ void _onPDMdata() {
 
 	// 16-bit, 2 bytes per sample
 	_samples_read = bytesAvailable / 2;
-
-	_mic_int 	= 1;
 }

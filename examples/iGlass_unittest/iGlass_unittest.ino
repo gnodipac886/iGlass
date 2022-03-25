@@ -18,7 +18,8 @@ void setup() {
 	unittest_i.init();
 	// unittest_i.unittest_imu();
 	// unittest_i.unittest_ble();
-	unittest_i.unittest_sd();
+	// unittest_i.unittest_sd();
+	unittest_i.unittest_ir();
 	// unittest_i.unittest_all();
 
 	#if DEBUG

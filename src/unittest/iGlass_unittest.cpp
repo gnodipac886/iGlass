@@ -29,46 +29,46 @@ int iGlass_unittest::init(){
 	Ret Val: 	int - SUCCESS or FAIL
 */
 int iGlass_unittest::unittest_imu() {
-	iGlass_imu imu_i = iGlass_imu();
+	// iGlass_imu imu_i = iGlass_imu();
 	
-	#if DEBUG
-		Serial.println("Before IMU init...");
-	#endif
+	// #if DEBUG
+	// 	Serial.println("Before IMU init...");
+	// #endif
 
-	imu_i.init();
+	// imu_i.init();
 
-	#if DEBUG
-		Serial.println("IMU initialized!");
-	#endif
+	// #if DEBUG
+	// 	Serial.println("IMU initialized!");
+	// #endif
 
-	int16_t imu_data_buf[IMU_FIFO_SIZE*3];
+	// int16_t imu_data_buf[IMU_FIFO_SIZE*3];
 
-	#if DEBUG
-		Serial.println("Before IMU read...");
-	#endif
+	// #if DEBUG
+	// 	Serial.println("Before IMU read...");
+	// #endif
 	
-	bool read_acc_works = (imu_i.read(imu_data_buf, IMU_FIFO_SIZE*3, ACC) != 0);
-	bool read_gyro_works = (imu_i.read(imu_data_buf, IMU_FIFO_SIZE*3, GYRO) != 0);
-	bool read_mag_works = (imu_i.read(imu_data_buf, IMU_FIFO_SIZE*3, MAG) != 0);
+	// bool read_acc_works = (imu_i.read(imu_data_buf, IMU_FIFO_SIZE*3, ACC) != 0);
+	// bool read_gyro_works = (imu_i.read(imu_data_buf, IMU_FIFO_SIZE*3, GYRO) != 0);
+	// bool read_mag_works = (imu_i.read(imu_data_buf, IMU_FIFO_SIZE*3, MAG) != 0);
 
-	imu_i.end();
+	// imu_i.end();
 
-	#if DEBUG
-		if (!read_acc_works) Serial.println("IMU read ACC failed...");
-		if (!read_gyro_works) Serial.println("IMU read GYRO failed...");
-		if (!read_mag_works) Serial.println("IMU read MAG failed...");
-	#endif
+	// #if DEBUG
+	// 	if (!read_acc_works) Serial.println("IMU read ACC failed...");
+	// 	if (!read_gyro_works) Serial.println("IMU read GYRO failed...");
+	// 	if (!read_mag_works) Serial.println("IMU read MAG failed...");
+	// #endif
 
-	if (read_acc_works && read_gyro_works && read_mag_works) {
-		#if DEBUG
-			Serial.println("IMU test succeeded!");
-		#endif
-		return SUCCESS;
-	}
-	#if DEBUG
-		Serial.println("IMU test failed!");
-	#endif
-	return FAIL;
+	// if (read_acc_works && read_gyro_works && read_mag_works) {
+	// 	#if DEBUG
+	// 		Serial.println("IMU test succeeded!");
+	// 	#endif
+	// 	return SUCCESS;
+	// }
+	// #if DEBUG
+	// 	Serial.println("IMU test failed!");
+	// #endif
+	// return FAIL;
 }
 
 /*
@@ -301,80 +301,137 @@ int iGlass_unittest::unittest_sd() {
 }
 
 /*
+    Function:   Test the functionality of ir module
+    Input:      None
+    Ret Val:    int - SUCCESS or FAIL
+*/
+int iGlass_unittest::unittest_ir() {
+    iGlass_ir ir_i = iGlass_ir();
+
+    #if DEBUG
+        Serial.println("Before IR init...");
+    #endif
+
+    ir_i.init();
+
+    #if DEBUG
+        Serial.println("IR initialized!");
+    #endif
+
+    #if DEBUG
+        Serial.println("Before IR read...");
+    #endif
+
+    int gesture, proximity;
+    int rgb_col[3];
+    for (int i = 0; i < 10; i++) {
+        while (!ir_i.read_ges(&gesture, 1));
+        Serial.println("Gesture " + String(i) + ": " + String(gesture));
+        while (!ir_i.read_col(rgb_col,1));
+        Serial.println("RGB color " + String(i) + ": " + String(rgb_col[0]) + "  " + String(rgb_col[1]) + "  " + String(rgb_col[2]));
+        while (!ir_i.read_prox(&proximity, 1));
+        Serial.println("Proximity " + String(i) + ": " + String(proximity));
+    }
+
+    #if DEBUG
+        Serial.println("After IR read...");
+    #endif
+
+    #if DEBUG
+        Serial.println("Before IR print...");
+    #endif
+
+    for (i = 0; i < 10; i++) {
+        ir_i.print();
+    }
+
+    #if DEBUG
+        Serial.println("After IR print...");
+    #endif
+
+    ir_i.end();
+
+    #if DEBUG
+        Serial.println("IR test succeeded!");
+    #endif
+    return SUCCESS;
+}
+
+/*
 	Function: 	Test if ble properly sends IMU
 	Input: 		nothing
 	Ret Val: 	int - SUCCESS or FAIL
 */
 int iGlass_unittest::unittest_ble_send_imu(){
-	iGlass_ble ble_i = iGlass_ble();
-	iGlass_imu imu_i = iGlass_imu();
-	const int imu_buf_size = 120;
-	int ble_imu_buf_idx = 0;
-	int imu_char_idx = 0;
+	// iGlass_ble ble_i = iGlass_ble();
+	// iGlass_imu imu_i = iGlass_imu();
+	// const int imu_buf_size = 120;
+	// int ble_imu_buf_idx = 0;
+	// int imu_char_idx = 0;
 
-	imu_char_idx = ble_i.addNewCharacteristic(imu_buf_size * sizeof(int16_t));
+	// imu_char_idx = ble_i.addNewCharacteristic(imu_buf_size * sizeof(int16_t));
 
-	ble_i.init();
-	imu_i.init();
+	// ble_i.init();
+	// imu_i.init();
 
-	int16_t imu_buf[imu_buf_size];
-	memset(imu_buf, 0, imu_buf_size);
+	// int16_t imu_buf[imu_buf_size];
+	// memset(imu_buf, 0, imu_buf_size);
 
-	#if DEBUG
-		Serial.println("Connecting to host...");
-	#endif
+	// #if DEBUG
+	// 	Serial.println("Connecting to host...");
+	// #endif
 
-	while(!ble_i.available());
+	// while(!ble_i.available());
 
-	delay(3000);
+	// delay(3000);
 
-	#if DEBUG
-		Serial.println("Connected!");
-		Serial.println("Starting to test BLE...");
-	#endif
+	// #if DEBUG
+	// 	Serial.println("Connected!");
+	// 	Serial.println("Starting to test BLE...");
+	// #endif
 
-	for(int i = 0; i < 1000; i++){
-		int status = SUCCESS;
+	// for(int i = 0; i < 1000; i++){
+	// 	int status = SUCCESS;
 
-		if (ble_imu_buf_idx < imu_buf_size) {
-			int samples_read = imu_i.read(&imu_buf[ble_imu_buf_idx], imu_buf_size - ble_imu_buf_idx, ACC);
-			ble_imu_buf_idx += samples_read;			//3 * samples_read : 0;   //kinda want to send separate/spread-out samples instead of blocks of samples............
+	// 	if (ble_imu_buf_idx < imu_buf_size) {
+	// 		int samples_read = imu_i.read(&imu_buf[ble_imu_buf_idx], imu_buf_size - ble_imu_buf_idx, ACC);
+	// 		ble_imu_buf_idx += samples_read;			//3 * samples_read : 0;   //kinda want to send separate/spread-out samples instead of blocks of samples............
 			
-			#if DEBUG
-				Serial.println("IMU samples read: " + String(samples_read) + " ble_idx: " + String(ble_imu_buf_idx));
-			#endif
-		}
+	// 		#if DEBUG
+	// 			Serial.println("IMU samples read: " + String(samples_read) + " ble_idx: " + String(ble_imu_buf_idx));
+	// 		#endif
+	// 	}
 		
-		if(!ble_i.available())
-			status = FAIL;
+	// 	if(!ble_i.available())
+	// 		status = FAIL;
 
-		if (ble_imu_buf_idx == imu_buf_size){
-			if (!ble_i.write(imu_char_idx, (int8_t *)imu_buf, sizeof(imu_buf)))
-				status = FAIL;
-			else{
-				ble_imu_buf_idx = 0;
-				memset(imu_buf, 0, sizeof(imu_buf));
-			}
-		}
+	// 	if (ble_imu_buf_idx == imu_buf_size){
+	// 		if (!ble_i.write(imu_char_idx, (int8_t *)imu_buf, sizeof(imu_buf)))
+	// 			status = FAIL;
+	// 		else{
+	// 			ble_imu_buf_idx = 0;
+	// 			memset(imu_buf, 0, sizeof(imu_buf));
+	// 		}
+	// 	}
 
-		if(status == FAIL){
-			#if DEBUG
-				Serial.println("BLE test failed!");
-			#endif
-			ble_i.end();
-			imu_i.end();
-			return FAIL;
-		}
+	// 	if(status == FAIL){
+	// 		#if DEBUG
+	// 			Serial.println("BLE test failed!");
+	// 		#endif
+	// 		ble_i.end();
+	// 		imu_i.end();
+	// 		return FAIL;
+	// 	}
 
-		delay(10);
-	}
+	// 	delay(10);
+	// }
 	
-	ble_i.end();
-	imu_i.end();
-	#if DEBUG
-		Serial.println("BLE test succeeded!");
-	#endif
-	return SUCCESS;
+	// ble_i.end();
+	// imu_i.end();
+	// #if DEBUG
+	// 	Serial.println("BLE test succeeded!");
+	// #endif
+	// return SUCCESS;
 }
 
 /*
@@ -384,12 +441,12 @@ int iGlass_unittest::unittest_ble_send_imu(){
 */
 int iGlass_unittest::unittest_all() {
 	int sd_works = unittest_sd();
-	int imu_works = unittest_imu();
+	// int imu_works = unittest_imu();
 	// Hardware Problem: After BLE.end(), BLE.begin() doesn't run succesfully 
 	// int ble_works = unittest_ble();				
-	int ble_send_imu_works = unittest_ble_send_imu();
+	//int ble_send_imu_works = unittest_ble_send_imu();
 
-	if (sd_works && imu_works && ble_send_imu_works){ //ble_works && ble_send_imu_works){
+	if (sd_works){ //imu_works && ble_works && ble_send_imu_works){
 		#if DEBUG
 			Serial.println("All tests succeeded!");
 		#endif

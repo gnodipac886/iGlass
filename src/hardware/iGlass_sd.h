@@ -54,9 +54,9 @@ class iGlass_sd {
     public:
         iGlass_sd(int sd_capacity = MIN_SDSC_CAPACITY): sd_capacity(sd_capacity) {}
         void 		init();    
+        void 		end();   
 		int 		write(int f_idx, byte * buf, int buf_size); 
-        int         read(int f_idx, byte * buf, int buf_size); 
-		void 		end();     
+        int         read(int f_idx, byte * buf, int buf_size);   
 		int 		addNewFile(char * fname); 
 		bool 		available();  
 		bool 		isSetup();    

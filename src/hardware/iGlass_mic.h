@@ -14,7 +14,7 @@
 #define INT_MIC 		0
 #define	EXT_MIC 		1
 
-#define PDM_BUF_SIZE 	1024 * 16
+#define PDM_BUF_SIZE 	1024 * 16	//PDM's buffer size is 1024
 
 // #define DEBUG 			0
 
@@ -38,7 +38,7 @@ class iGlass_mic {
 		void 				end();
 		int 				read(int16_t * buf, int num_samples);
 		int 				write();
-		int 				get_samples_read();
+		int 				num_samples_read();
 		void 				print();
 		int16_t * 			get_buf();
 
