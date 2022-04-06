@@ -46,9 +46,9 @@ void iGlass_mic::init(){
 	Ret Val: 	num of sensor data pts read
 */
 int iGlass_mic::read(int16_t * buf, int num_samples){
-	if (_samples_read == num_samples) {
+	if (_samples_read >= num_samples) {
 		memcpy(buf, _buf, num_samples * sizeof(int16_t));
-		return _samples_read;
+		return num_samples;
 	}
 	return 0;
 }
