@@ -4,7 +4,7 @@ static 		PDMClass	INT_MIC_PDM(PIN_PDM_DIN, PIN_PDM_CLK, PIN_PDM_PWR);
 static 		PDMClass  	EXT_MIC_PDM(D8, D7, D6);
 
 int16_t * 		_buf 			= nullptr;
-volatile int 	_samples_read 	= 0;
+volatile int 	_samples_read 	= 0;//...............needs to update to how many left to read, or if on_pdm_buffer gets updated before we read all samples on buffer
 PDMClass 		PDM 			= EXT_MIC_PDM;
 
 void _onPDMdata();
@@ -52,6 +52,24 @@ int iGlass_mic::read(int16_t * buf, int num_samples){
 	}
 	return 0;
 }
+
+
+//....................................
+// int iGlass_mic::read(int16_t * buf, int num_samples){
+// 	if (num_samples <= 0) {
+// 		#if DEBUG
+// 			Serial.println("Invalid num_samples (<= 0)!");
+// 		#endif
+// 		return 0;
+// 	}
+
+// 	int num_read_samples = min(num_samples, _samples_read);
+// 	memcpy(buf, _buf, num_read_samples * sizeof(int16_t));
+
+// 	return num_read_samples;
+// }
+
+
 
 /*
 	Function:	Nothing, placeholder
