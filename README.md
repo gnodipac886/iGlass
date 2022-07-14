@@ -4,9 +4,20 @@
 ### [Undergraduate Thesis](https://drive.google.com/file/d/1tWfxlOyeyCUGNaeSUH1rKjghqD-MefPe/view?usp=sharing)
 
 # Images
-![iGlass v3 front] (https://raw.githubusercontent.com/gnodipac886/iGlass/library/images/iGlass_v3_front.jpg)
-![iGlass v3 back] (https://raw.githubusercontent.com/gnodipac886/iGlass/library/images/iGlass_v3_back.jpg)
-![iGlass v3 vs v2] (https://raw.githubusercontent.com/gnodipac886/iGlass/library/images/iGlass_v3_vs_v2.jpg)
-![iGlass v2] (https://raw.githubusercontent.com/gnodipac886/iGlass/library/images/iGlass_v2.jpg)
-![iGlass v2 pcb] (https://raw.githubusercontent.com/gnodipac886/iGlass/library/images/iGlass_v2_pcb.jpg)
-![iGlass v1] (https://raw.githubusercontent.com/gnodipac886/iGlass/library/images/iGlass_v1.jpg)
+### iGlass v3 front
+<img src="https://raw.githubusercontent.com/gnodipac886/iGlass/library/images/iGlass_v3_front.jpg" alt="drawing" width="600"/>
+
+### iGlass v3 back
+<img src="https://raw.githubusercontent.com/gnodipac886/iGlass/library/images/iGlass_v3_back.jpg" alt="drawing" width="600"/>
+
+### iGlass v3 vs v2
+<img src="https://raw.githubusercontent.com/gnodipac886/iGlass/library/images/iGlass_v3_vs_v2.jpg" alt="drawing" width="600"/>
+
+### iGlass v2
+<img src="https://raw.githubusercontent.com/gnodipac886/iGlass/library/images/iGlass_v2.jpg" alt="drawing" width="600"/>
+
+### iGlass v2 pcb
+<img src="https://raw.githubusercontent.com/gnodipac886/iGlass/library/images/iGlass_v2_pcb.png" alt="drawing" width="600"/>
+
+### iGlass v1
+<img src="https://raw.githubusercontent.com/gnodipac886/iGlass/library/images/iGlass_v1.jpg" alt="drawing" width="600"/>
