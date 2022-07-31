@@ -28,12 +28,12 @@ void iGlass_sd::init() {
 	}
 
     card_present = digitalRead(CHIP_DETECT);
-    attachInterrupt(digitalPinToInterrupt(CHIP_DETECT), update_card_detect, CHANGE);
+    attachInterrupt(digitalPinToInterrupt(CHIP_DETECT), update_card_detect, CHANGE);    //.................somehow not working.......?
 
 
     if (!SD.begin(SD_CONFIG)) {
         #if DEBUG
-        Serial.println("initialization failed!");
+            Serial.println("initialization failed!");
         #endif
         return;//while (1);
     }
@@ -175,7 +175,8 @@ int iGlass_sd::addNewFile(char * fname) {
 
     if (SD.exists(iGlass_fpath)) {
         #if DEBUG
-            Serial.println(String(fname) + "File(name) already exists!");   //all existing files in iGlass_sd directory should be added through this function
+            Serial.print(String(fname));
+            Serial.println(" file(name) already exists!");   //all existing files in iGlass_sd directory should be added through this function
         #endif
         return -1;
     }

@@ -11,69 +11,90 @@ void setup() {
 	}
 
 	Serial.println("Initialized!");
+    
 
     /*MIC unittest - MONO*/
     Serial.println("Testing MONO MIC");
 
-    iGlass_mic mic_i = iGlass_mic(PDM_BUF_SIZE, 1, LOW_FREQ, EXT_MIC); // not sure if ext_mic or int_mic...........
-
-
-    Serial.println("Before MIC init...");
-
-    mic_i.init();
-
-    Serial.println("MIC initialized!");
-
-
-    Serial.println("Before MIC print...");
-
-    mic_i.print();
-
-    Serial.println("After MIC print...");
-
-
-    mic_i.end();
-
-
-	/*MIC unittest -STEREO*/
-    Serial.println("Testing STEREO MIC");
-
-	mic_i = iGlass_mic();
+    iGlass_mic mic_i = iGlass_mic(PDM_BUF_SIZE, 1, LOW_FREQ, INT_MIC); // using Arduino Nano 33 Ble Sense Mic
 
     Serial.println("Before MIC init...");
-
     mic_i.init();
-
     Serial.println("MIC initialized!");
 
 
     Serial.println("Before MIC read...");
 
-    int16_t mic_data_buf[PDM_BUF_SIZE];
+    int16_t * mic_data_buf = new int16_t[(int)(PDM_BUF_SIZE/sizeof(int16_t))];
 
-    while(mic_i.num_samples_read() == 0);
+    int read_samples = 0;
 
-    bool mic_read = (mic_i.read(mic_data_buf, mic_i.num_samples_read()) != 0);
+    do {
+      	read_samples = mic_i.read(mic_data_buf, mic_i.num_samples_read());
+    } while(read_samples == 0);
+
+    for (int i = 0; i < read_samples; i++) { 
+		Serial.print(mic_data_buf[i]);
+		Serial.print(", ");
+    }
+    Serial.println();
 
     Serial.println("After MIC read...");
 
 
     Serial.println("Before MIC print...");
-
+    while (mic_i.num_samples_read() == 0);
     mic_i.print();
-
     Serial.println("After MIC print...");
 
 
     mic_i.end();
+    delete[] mic_data_buf;
+    mic_data_buf = nullptr;
 
-    if (!mic_read) Serial.println("MIC read failed...");
 
-    if (mic_read) {
-        Serial.println("MIC test succeeded!");
-    } else {
-        Serial.println("MIC test failed!");
+	/*MIC unittest -STEREO*/
+    Serial.println("Testing STEREO MIC");
+
+    mic_i = iGlass_mic(PDM_BUF_SIZE, 2, HIGH_FREQ, EXT_MIC);
+
+    Serial.println("Before MIC init...");
+    mic_i.init();
+    Serial.println("MIC initialized!");
+
+
+    Serial.println("Before MIC read...");
+
+    mic_data_buf = new int16_t[(int)(PDM_BUF_SIZE/sizeof(int16_t))];
+    read_samples = 0;
+
+    do {
+      	read_samples = mic_i.read(mic_data_buf, mic_i.num_samples_read());
+    } while(read_samples == 0);
+
+    for (int i = 0; i < read_samples; i++) {
+        Serial.print(mic_data_buf[i]);
+        Serial.print(" ");
+        Serial.print(mic_data_buf[++i]);
+        Serial.print(", ");
     }
+    Serial.println();
+
+    Serial.println("After MIC read...");
+
+
+    Serial.println("Before MIC print...");
+    while (mic_i.num_samples_read() == 0);
+    mic_i.print();
+    Serial.println("After MIC print...");
+	
+
+    mic_i.end();
+    delete[] mic_data_buf;
+    mic_data_buf = nullptr;
+
+
+    Serial.println("End of MIC unittest!");
 }
 
 

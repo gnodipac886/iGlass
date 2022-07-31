@@ -19,7 +19,7 @@
 #define LSM9DS1_CTRL_REG8			0x22
 #define LSM9DS1_OUT_X_XL		 	0x28
 
-#define IMU_FIFO_SIZE				32
+#define IMU_FIFO_SIZE				32			// only for ACC and GYRO
 
 // magnetometer
 #define LSM9DS1_ADDRESS_M			0x1e
@@ -42,6 +42,11 @@
 #define MAG 						2
 #define ACCGYRO						3
 
+// other
+#define NUM_AXES 					3
+
+// #define DEBUG						1
+
 //----------------------------------------------------------------------------------------------------------------------
 // iGlass imu class
 //----------------------------------------------------------------------------------------------------------------------
@@ -54,7 +59,7 @@ class iGlass_imu {
 		int 	read_acc_gyro(int16_t * acc_buf, int16_t * gyro_buf, int num_samples);
 
 	private:
-		int 	imu_setup_flag;
+		int 	imu_setup_flag = 0;
 		int 	read_acc(int16_t *buf, int num_samples);
 		int 	read_gyro(int16_t *buf, int num_samples);
 		int 	read_mag(int16_t *buf, int num_samples);

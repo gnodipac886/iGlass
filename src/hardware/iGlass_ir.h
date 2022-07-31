@@ -1,5 +1,5 @@
-#ifndef IGLASS_IR_H
-#define IGLASS_IR_H
+#ifndef iGLASS_IR_H
+#define iGLASS_IR_H
 
 #include "arduino.h"
 #include "Arduino_APDS9960.h"   //find hardware i2c, also same issue for imu!!!....................
@@ -12,6 +12,7 @@
 #define GES							0       // Gesture
 #define COL 						1       // Color
 #define PROX 						2       // Proximity
+#define DEBUG						1 		
 
 //----------------------------------------------------------------------------------------------------------------------
 // iGlass ir class

@@ -91,6 +91,9 @@ int LSM9DS1Class::begin()
   writeRegister(LSM9DS1_ADDRESS_M, LSM9DS1_CTRL_REG3_M, 0x00); // Continuous conversion mode
   writeRegister(LSM9DS1_ADDRESS_M, LSM9DS1_CTRL_REG4_M, 0b00000100); // Z-axis operative mode medium performance
 
+  //.......Phoebe
+  writeRegister(LSM9DS1_ADDRESS_M, 0x24, 0x00);
+
   measureODRcombined() ;  // for Accelerometer/Gyro and Magnetometer.
   return 1;
 }
@@ -457,7 +460,7 @@ int LSM9DS1Class::readRawMagnetInt16(int16_t& x, int16_t& y, int16_t& z)
   return 1;
 }
 
-int LSM9DS1Class::magneticFieldAvailable()
+int LSM9DS1Class::magnetAvailable()
 { //return (readRegister(LSM9DS1_ADDRESS_M, LSM9DS1_STATUS_REG_M) & 0x08)==0x08;
   int num = 0;
   if (num = readRegister(LSM9DS1_ADDRESS_M, LSM9DS1_STATUS_REG_M) & 0x08) {
@@ -465,6 +468,7 @@ int LSM9DS1Class::magneticFieldAvailable()
   }
   return 0;
 }
+
 
 // modified: the void is no longer for translating half calibrated measurements into offsets
 // Instead the voids rawAccel()  rawGyro()  and rawMagnet must be used for calibration purposes

@@ -7,7 +7,7 @@
 //----------------------------------------------------------------------------------------------------------------------
 // defines
 //----------------------------------------------------------------------------------------------------------------------
-#define BLE_MAX_SEND_SIZE             	244
+#define BLE_MAX_SEND_SIZE             	244	//should be 512 bytes...but an arduino forum has ppl saying 224...?
 #define MAX_NUM_CHAR 					6
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -20,7 +20,7 @@
 class iGlass_ble {
 	public:
 		void 		init();
-		int 		write(int char_idx, int8_t *buf, int buf_size);
+		int 		write(int char_idx, int8_t *buf, int bytes_to_write);
 		int 		read();
 		void 		end();
 		int 		addNewCharacteristic(int buf_size);

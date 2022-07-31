@@ -37,7 +37,7 @@ void iGlass_ir::init() {
 
     if (!APDS.begin()) {
         #if DEBUG
-        Serial.println("Error initializing APDS9960 sensor!");
+            Serial.println("Error initializing APDS9960 sensor!");
         #endif
         return;//while(1)
     }
@@ -76,7 +76,7 @@ int iGlass_ir::read(int * buf, int num_samples, int sensor) {
 		default:
 			samples_read = 0;
             #if DEBUG
-                Serial.println(String(sensor) + " is not a valid IR sensor");
+                Serial.println("Invalid sensor argument!");
             #endif
 			break;
 	}
@@ -100,7 +100,8 @@ int iGlass_ir::read_ges(int * buf, int num_samples) {//.............num_samples?
         //   - 3 GESTURE_RIGHT: from digital pins side towards analog pins side
         buf[0] = APDS.readGesture();
         #if DEBUG
-            Serial.println("readGesture ret val: " + String(buf[0]));
+            Serial.print("readGesture ret val: ");
+            Serial.println(buf[0]);
 	    #endif
         return 1;
     }
@@ -125,7 +126,12 @@ int iGlass_ir::read_col(int * buf, int num_samples) {//............num_samples??
             buf[1] = g;
             buf[2] = b;
             #if DEBUG
-                Serial.println("readColor RGB ret val: " + String(r) + " " + String(g) + " " + String(b));
+                Serial.print("readColor RGB ret val: ");
+                Serial.print(r);
+                Serial.print(" ");
+                Serial.print(g);
+                Serial.print(" ");
+                Serial.println(b);
             #endif
             return 1;
         } else {
@@ -161,7 +167,8 @@ int iGlass_ir::read_prox(int * buf, int num_samples) {//............num_samples?
         } else {
             buf[0] = proximity;
             #if DEBUG
-                Serial.println("readProximity ret val: " + String(proximity));
+                Serial.print("readProximity ret val: ");
+                Serial.println(proximity);
             #endif
             return 1;
         }
@@ -202,13 +209,38 @@ void iGlass_ir::print() {
             //   - 3 GESTURE_RIGHT: from digital pins side towards analog pins side
             //   - -1 GESTURE_NONE: the gesture doesn’t match any of the above.
             int gesture = APDS.readGesture();
-            Serial.println("readGesture ret val: " + String(gesture));
+            switch (gesture) {
+                case GESTURE_UP:
+                    Serial.println("readGesture ret val: GESTURE_UP");
+                    break;
+
+                case GESTURE_DOWN:
+                    Serial.println("readGesture ret val: GESTURE_DOWN");
+                    break;
+
+                case GESTURE_LEFT:
+                    Serial.println("readGesture ret val: GESTURE_LEFT");
+                    break;
+
+                case GESTURE_RIGHT:
+                    Serial.println("readGesture ret val: GESTURE_RIGHT");
+                    break;
+
+                default:
+                    break;
+                }
         }
         
         if (APDS.colorAvailable()){
             int r, g, b;
             APDS.readColor(r,g,b);
-            Serial.println("readColor RGB ret val: " + String(r) + " " + String(g) + " " + String(b));
+
+            Serial.print("readColor RGB ret val: ");
+            Serial.print(r);
+            Serial.print(" ");
+            Serial.print(g);
+            Serial.print(" ");
+            Serial.println(b);
         }
 
         if (APDS.proximityAvailable()) {
@@ -217,7 +249,9 @@ void iGlass_ir::print() {
             // - 255 => far
             // - -1  => error
             int proximity = APDS.readProximity();
-            Serial.println("readProximity ret val: " + String(proximity));
+
+            Serial.print("readProximity ret val: ");
+            Serial.println(proximity);
         }
 	#endif
 }

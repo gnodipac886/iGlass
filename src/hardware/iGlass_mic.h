@@ -3,20 +3,19 @@
 
 #include "arduino.h"
 #include <PDM.h>
-// #include "../deps/PDM/src/PDM.h"
 
 //----------------------------------------------------------------------------------------------------------------------
 // defines
 //----------------------------------------------------------------------------------------------------------------------
-#define LOW_FREQ		16000
-#define HIGH_FREQ		41667	// default number of output channels; default PCM output frequency, 41667
+#define LOW_FREQ		16000	// for MONO
+#define HIGH_FREQ		41667	// for STEREO; default number of output channels; default PCM output frequency, 41667
 
-#define INT_MIC 		0
+#define INT_MIC 		0		// Arduino Nano 33 Ble Sense Mic
 #define	EXT_MIC 		1
 
-#define PDM_BUF_SIZE 	1024 * 16	//PDM's buffer size is 1024
+#define PDM_BUF_SIZE 	1024 	//PDM's buffer size (in bytes)
 
-// #define DEBUG 			0
+// #define DEBUG 			1
 
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -28,25 +27,20 @@
 //----------------------------------------------------------------------------------------------------------------------
 class iGlass_mic {
 	public:
-		iGlass_mic(int buf_size = PDM_BUF_SIZE, int channels = 2, int frequency = HIGH_FREQ, int mic_location = EXT_MIC): 
-		_channels(channels), 
-		_frequency(frequency),
-		_mic_location(mic_location),
-		_buf_size(buf_size)
-		{}
+		iGlass_mic(int buf_size = PDM_BUF_SIZE, int channels = 2, int frequency = HIGH_FREQ, int mic_location = EXT_MIC);
 		void 				init();
 		void 				end();
 		int 				read(int16_t * buf, int num_samples);
 		int 				write();
-		int 				num_samples_read();
+		volatile int		num_samples_read();
 		void 				print();
-		int16_t * 			get_buf();
+		volatile int16_t * 	get_buf();
 
 	private:
 		int 		_buf_size;
-		int 		_mic_location;
 		char 		_channels;
 		int 		_frequency;
+		int 		_mic_location;
 };
 
 #endif

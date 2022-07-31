@@ -3,12 +3,19 @@
 static 		PDMClass	INT_MIC_PDM(PIN_PDM_DIN, PIN_PDM_CLK, PIN_PDM_PWR);
 static 		PDMClass  	EXT_MIC_PDM(D8, D7, D6);
 
-int16_t * 		_buf 			= nullptr;
-volatile int 	_samples_read 	= 0;//...............needs to update to how many left to read, or if on_pdm_buffer gets updated before we read all samples on buffer
-PDMClass 		PDM 			= EXT_MIC_PDM;
+volatile int16_t * 	_buf 			= nullptr;
+volatile int 		_samples_read 	= 0;
+PDMClass 			PDM 			= EXT_MIC_PDM;
 
 void _onPDMdata();
 
+iGlass_mic::iGlass_mic(int buf_size, int channels, int frequency, int mic_location) {
+	_buf_size = buf_size;
+	_channels = channels;
+	_frequency = frequency;
+	_mic_location = mic_location;
+	_samples_read = 0;
+}
 /*
 	Function: 	Begin and setup current instance of mic
 	Input: 		None
@@ -25,11 +32,11 @@ void iGlass_mic::init(){
 			break;
 	}
 
-	_buf = new int16_t[_buf_size];
+	_buf = new int16_t[(int)(_buf_size/sizeof(int16_t))];  
 
 	// Configure the data receive callback
-	PDM.onReceive(_onPDMdata);
-	PDM.setBufferSize(_buf_size);
+	PDM.onReceive(_onPDMdata);	
+	PDM.setBufferSize(_buf_size);	//if not called, 512 bytes by default
 
 	if (!PDM.begin(_channels, _frequency)){
 		#if DEBUG
@@ -37,6 +44,8 @@ void iGlass_mic::init(){
 		#endif
 		while (1);
 	}
+	
+	delay(100);		//not sure why, but first _onPDMdata _buf update is all zeros
 }
 
 /*
@@ -45,29 +54,32 @@ void iGlass_mic::init(){
 				num_samples - number of samples to read, should be the same as _samples_read
 	Ret Val: 	num of sensor data pts read
 */
-int iGlass_mic::read(int16_t * buf, int num_samples){
-	if (_samples_read >= num_samples) {
-		memcpy(buf, _buf, num_samples * sizeof(int16_t));
-		return num_samples;
+int iGlass_mic::read(int16_t * buf, int num_samples){			//what if we edit _samples_read to subtract num_samples, and add a new varaible like mic_data_buf_cur_read_idx..............?
+	if (num_samples <= 0) {
+		#if DEBUG
+			Serial.println("Invalid num_samples (<= 0)!");
+		#endif
+		return 0;
 	}
-	return 0;
+
+	int samples_read = 0;		//................rewrite logic!!! interrups() and noInterrupts placement doesnt make sense
+	noInterrupts();
+	samples_read = (int)_samples_read;
+	interrupts();
+
+	if (samples_read >= num_samples) {
+		noInterrupts();
+		memcpy(buf, (int16_t*)_buf, (size_t)(num_samples * sizeof(int16_t)));
+		_samples_read = 0;		//.........................
+		interrupts();
+		return num_samples;
+	} else {
+		#if DEBUG
+			Serial.println("Not enough samples yet!");
+		#endif
+		return 0;
+	}
 }
-
-
-//....................................
-// int iGlass_mic::read(int16_t * buf, int num_samples){
-// 	if (num_samples <= 0) {
-// 		#if DEBUG
-// 			Serial.println("Invalid num_samples (<= 0)!");
-// 		#endif
-// 		return 0;
-// 	}
-
-// 	int num_read_samples = min(num_samples, _samples_read);
-// 	memcpy(buf, _buf, num_read_samples * sizeof(int16_t));
-
-// 	return num_read_samples;
-// }
 
 
 
@@ -86,16 +98,27 @@ int iGlass_mic::write(){
 	Ret Val: 	None
 */
 void iGlass_mic::print() {
-	for (int i = 0; i < _samples_read; i++) {
-		if (_channels == 2) {
-			#if DEBUG
-				Serial.print(String(_buf[i]) + " ");
-			#endif
+	#if DEBUG
+		int16_t * buf = new int16_t[(int)(_buf_size/sizeof(int16_t))];
+		int samples_read = 0;
+
+		noInterrupts();
+		samples_read = _samples_read;
+		memcpy(buf, (int16_t*)_buf, (size_t)(samples_read * sizeof(int16_t)));
+		interrupts();
+
+		for (int i = 0; i < samples_read; i++) {
+			Serial.print(buf[i]);
+			if (_channels == 2) {
+				Serial.print(" ");
+				Serial.print(buf[++i]);
+				Serial.print(", ");
+			} else {
+				Serial.print(", ");
+			}
 		}
-		#if DEBUG
-			Serial.println(String(_buf[++i]));
-		#endif
-	}
+		Serial.println();
+	#endif
 }
 
 /*
@@ -103,7 +126,7 @@ void iGlass_mic::print() {
 	Input:		None
 	Ret Val: 	number of samples read
 */
-int iGlass_mic::num_samples_read() {
+volatile int iGlass_mic::num_samples_read() {
 	return _samples_read;
 }
 
@@ -112,7 +135,7 @@ int iGlass_mic::num_samples_read() {
 	Input:		None
 	Ret Val: 	data buffer
 */
-int16_t * iGlass_mic::get_buf() {
+volatile int16_t * iGlass_mic::get_buf() {
 	return _buf;
 }
 
@@ -122,8 +145,11 @@ int16_t * iGlass_mic::get_buf() {
 	Ret Val: 	data buffer
 */
 void iGlass_mic::end(){
+
 	PDM.end();
-	delete(_buf);
+	PDM.onReceive(NULL);
+
+	delete[] _buf;
 	_buf = nullptr;
 }
 
@@ -137,7 +163,7 @@ void _onPDMdata() {
 	int bytesAvailable = PDM.available();
 
 	// Read into the sample buffer
-	PDM.read(_buf, bytesAvailable);
+	PDM.read((int16_t*)_buf, bytesAvailable);
 
 	// 16-bit, 2 bytes per sample
 	_samples_read = bytesAvailable / 2;
