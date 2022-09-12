@@ -10,7 +10,7 @@ void iGlass_sd::init() {
     if (sd_setup_flag == 1)
         return;
 
-    #if DEBUG
+    #if DEBUG_SD
         if(!Serial){
             Serial.begin(115200);
             while (!Serial);
@@ -21,7 +21,7 @@ void iGlass_sd::init() {
 	pinMode(CHIP_DETECT, INPUT);
 
     while (!digitalRead(CHIP_DETECT)) {
-		#if DEBUG
+		#if DEBUG_SD
 		    Serial.println("No SD card detected");
 		#endif
 		delay(1000);
@@ -32,7 +32,7 @@ void iGlass_sd::init() {
 
 
     if (!SD.begin(SD_CONFIG)) {
-        #if DEBUG
+        #if DEBUG_SD
             Serial.println("initialization failed!");
         #endif
         return;//while (1);
@@ -41,7 +41,7 @@ void iGlass_sd::init() {
     //remove possibly existing iGlass data from previous use
     if(SD.exists(iGlass_dirname)) {
         iGlass_dir = SD.open(iGlass_dirname);    
-        clearDirectory(iGlass_dir);
+        //.............................clearDirectory(iGlass_dir);
     } else {
         SD.mkdir(iGlass_dirname);
         iGlass_dir = SD.open(iGlass_dirname); 
@@ -59,7 +59,7 @@ void iGlass_sd::init() {
 void iGlass_sd::clearDirectory(ExFile dir) {
     while (true) {
         ExFile entry = dir.openNextFile();
-        char entry_name[max_filename_len];//* entry_name;  //....added
+        char entry_name[MAX_FILENAME_LEN];//* entry_name;  //....added
         if (!entry) {
             //no more files
             break;
@@ -67,7 +67,7 @@ void iGlass_sd::clearDirectory(ExFile dir) {
         if (entry.isDirectory()) {
             clearDirectory(entry);
         } else {
-            if (entry.getName(entry_name,max_filename_len)) {   //.....raondom size number, still not sure what it means
+            if (entry.getName(entry_name,MAX_FILENAME_LEN)) {   //.....raondom size number, still not sure what it means
                 string iGlass_fpath = string(iGlass_dirname) + "/" + string(entry_name);
                 SD.remove(const_cast<char*>(iGlass_fpath.c_str()));
             }
@@ -136,7 +136,7 @@ void iGlass_sd::update_card_detect() {
     card_present = digitalRead(CHIP_DETECT);
     if (card_present) {
         if (!SD.begin(SD_CONFIG)) {
-            #if DEBUG
+            #if DEBUG_SD
                 Serial.println("re-initialization failed!");
             #endif
             while (1);
@@ -152,19 +152,19 @@ void iGlass_sd::update_card_detect() {
 int iGlass_sd::addNewFile(char * fname) { 
     //checks
     if (!isSetup()) {
-        #if DEBUG
+        #if DEBUG_SD
             Serial.println("init() has not been called yet");
         #endif
         return -1;  
     }
     if (!available()) {
-        #if DEBUG
+        #if DEBUG_SD
             Serial.println("No SD card detected");
         #endif
         return -1;  
     }
     if (fname == nullptr) {
-        #if DEBUG
+        #if DEBUG_SD
             Serial.println("nullptr given for file name");
         #endif
         return -1;  
@@ -174,13 +174,13 @@ int iGlass_sd::addNewFile(char * fname) {
     char * iGlass_fpath = const_cast<char*>(iGlass_fpath_str.c_str());
 
     if (SD.exists(iGlass_fpath)) {
-        #if DEBUG
+        #if DEBUG_SD
             Serial.print(String(fname));
             Serial.println(" file(name) already exists!");   //all existing files in iGlass_sd directory should be added through this function
         #endif
         return -1;
     }
-    if (sd_num_files >= SET_NUM_FILES_LIMIT) {  
+    if (sd_num_files >= NUM_FILES_LIMIT) {  
         #if DEBUG
             Serial.println("(chosen) Num File limit reached");
         #endif
@@ -193,7 +193,7 @@ int iGlass_sd::addNewFile(char * fname) {
     file_des[sd_num_files]->read_position = 0;
 
     if (!(*(file_des[sd_num_files]->file_ptr))) { 
-        #if DEBUG
+        #if DEBUG_SD
             Serial.println("the file did not open succesfully; file not added");
         #endif
         delete file_des[sd_num_files]->file_ptr;//......do i need
@@ -216,37 +216,37 @@ int iGlass_sd::addNewFile(char * fname) {
 int iGlass_sd::write(int f_num, byte * buf, int buf_size) {
     //checks
     if (!isSetup()) {
-        #if DEBUG
+        #if DEBUG_SD
             Serial.println("init() has not been called yet");
         #endif
         return 0;  
     } 
     if (!available()) {
-        #if DEBUG
+        #if DEBUG_SD
             Serial.println("No SD card detected");
         #endif
         return 0;  
     } 
     if (f_num < 0 && f_num >= sd_num_files) {
-        #if DEBUG
+        #if DEBUG_SD
             Serial.println("the given file number does not exist");
         #endif
         return 0; 
     }
     if (file_des[f_num] == nullptr) {
-        #if DEBUG
+        #if DEBUG_SD
             Serial.println("the given file is not added");
         #endif
         return 0; 
     }
     if (buf == nullptr) {
-        #if DEBUG
+        #if DEBUG_SD
             Serial.println("nullptr given for data to be written");
         #endif
         return 0; 
     }
     if (buf_size <= 0) {
-        #if DEBUG
+        #if DEBUG_SD
             Serial.println("invalid buffer size given for data to be written");
         #endif
         return 0; 
@@ -279,37 +279,37 @@ int iGlass_sd::write(int f_num, byte * buf, int buf_size) {
 int iGlass_sd::read(int f_num, byte * buf, int buf_size) { 
 	//checks
 	 if (!isSetup()) {
-        #if DEBUG
+        #if DEBUG_SD
             Serial.println("init() has not been called yet");
         #endif
         return 0;  
     } 
     if (!available()) {
-        #if DEBUG
+        #if DEBUG_SD
             Serial.println("No SD card detected");
         #endif
         return 0;  
     } 
     if (f_num < 0 && f_num >= sd_num_files) {
-        #if DEBUG
+        #if DEBUG_SD
             Serial.println("the given file number does not exist");
         #endif
         return 0; 
     }
     if (file_des[f_num] == nullptr) {
-        #if DEBUG
+        #if DEBUG_SD
             Serial.println("the given file is not added");
         #endif
         return 0; 
     }
     if (buf == nullptr) {
-        #if DEBUG
+        #if DEBUG_SD
             Serial.println("nullptr given for data to be written");
         #endif
         return 0; 
     }
     if (buf_size <= 0) {
-        #if DEBUG
+        #if DEBUG_SD
             Serial.println("invalid buffer size given for data to be written");
         #endif
         return 0; 
@@ -324,7 +324,7 @@ int iGlass_sd::read(int f_num, byte * buf, int buf_size) {
     file_des[f_num]->file_ptr = new ExFile(SD.open((const_cast<char*>(iGlass_fpath_str.c_str())), O_RDWR | O_CREAT | O_APPEND));
 
     if (!(*(file_des[f_num]->file_ptr))) { 
-        #if DEBUG
+        #if DEBUG_SD
             Serial.println("the file did not open succesfully");
         #endif
         delete file_des[f_num]->file_ptr;//.......do i need
