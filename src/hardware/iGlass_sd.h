@@ -55,14 +55,12 @@ struct dentry {
 //----------------------------------------------------------------------------------------------------------------------
 class iGlass_sd {
     public:
-        iGlass_sd(int sd_capacity = 32000000): sd_capacity(sd_capacity) {}
-        void 		init();    
+        iGlass_sd(int sd_capacity = 32000000000): sd_capacity(sd_capacity) {}
+        int 		init();    
         void 		end();   
 		int 		write(int f_idx, byte * buf, int buf_size); 
         int         read(int f_idx, byte * buf, int buf_size);   
 		int 		addNewFile(char * fname); 
-		bool 		available();  //can prob delete, since we have card_present......future
-		bool 		isSetup();    //can prob delete, since we have sd_setup_flag........future
 
     private:
         ExFile      			iGlass_dir; 
@@ -73,9 +71,10 @@ class iGlass_sd {
         dentry *    			file_des[10/*randomly set num files limit (for now).....may change in the future*/];
         int 					sd_num_files = 0;
         inline static void     	update_card_detect();
-        inline static int     	card_present = 0;
-        void        			clearDirectory(ExFile dir);
+        inline static bool     	card_present = 0;       // 1 when SD card is detected (in SD card slot)
+        void        			clearDirectory();
         void        			closeFiles();
+        int                     openAddedFile(int f_num);
         //bool        spaceAvailable(int num_bytes);    // can add to write func.......in the future
 };
 

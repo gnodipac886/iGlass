@@ -45,18 +45,17 @@ void setup() {
 		while(!Serial);
 	}
 
-	sd_i.init();
+	if (sd_i.init() == EXECUTION_FAILURE) {
+        sd_i.end();//....................does this destruct the iGlass_sd instance?????
+        while(1);
+    }
 
 	bool success = true;
-	if (!sd_i.isSetup()) {
-        Serial.println("init() did not successfully setup SD");
-        success = false;
-	}
-
-    if (!sd_i.available()) {
-        Serial.println("No SD card detected");
-        success = false;  
-    }
+	
+    // if (!sd_i.available()) {
+    //     Serial.println("No SD card detected");
+    //     success = false;  
+    // }
 	if (!success) {
 		sd_i.end();
 		while(1);
@@ -157,7 +156,7 @@ void loop() {
     + The number of imu reads and sd writes vary every loop
     => magnetometer samples will not be read with equal time intervals
 
-    Ideally, we want to be able to perform an ACC/GYRO FIFO Buffer read by every 58.823 miliseconds (since 1000 miliseconds per 17 FIFO Buffer Read), to not lose old FIFO samples
+    Ideally, we want to be able to perform an ACC/GYRO FIFO Buffer read every 58.823 miliseconds (since 1000 miliseconds per 17 FIFO Buffer Read), to not lose old FIFO samples
     => Ideally, we want to be able to perform an SD ACC/GYRO write every ((58.823 miliseconds per IMU ACC/GYRO FIFO Read) * (3 IMU ACC/GYRO FIFO Reads per SD ACC/GYRO write) =) 176.470 miliseconds
 
     Considering how much time the imu reads and sd writes take, we might be able to reduce power consumption as well as the magnetometer read time interval variance by adding a time delay at every loop
