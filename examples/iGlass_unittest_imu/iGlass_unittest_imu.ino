@@ -54,7 +54,15 @@ void setup() {
 	Serial.println("Magnetometer data read!");
 
     Serial.println("Before reading ACC_GYRO");
-//......................................................
+    int16_t imu_acc_data_buf[IMU_FIFO_SAMPLE_CAPACITY*NUM_AXES];
+    int16_t imu_gyro_data_buf[IMU_FIFO_SAMPLE_CAPACITY*NUM_AXES];
+    read_status = 0;
+    while(read_status == 0) {
+        read_status = imu_i.read_acc_gyro(imu_acc_data_buf, imu_gyro_data_buf, IMU_FIFO_SAMPLE_CAPACITY);
+    }
+    if (read_status == EXECUTION_FAILURE) {
+        while(1);
+    }
     Serial.println("ACC_GYRO data read!");
 
 	Serial.println("After IMU read...");

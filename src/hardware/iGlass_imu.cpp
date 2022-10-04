@@ -72,11 +72,16 @@ int iGlass_imu::init() {
 				num_samples - requested number of samples to read 
 				sensor - ACC/GYRO/MAG  
 	Ret Val: 	number of sensor samples successfully read (samples_read)
-				EXECUTION_SUCCESS - invalid argument(s); not enough sensor samples available yet; buffer values not changed
-
-				EXECUTION_FAILURE - failure to read available data point(s) during execution; buffer values still changed
+				EXECUTION_SUCCESS - not enough sensor samples available yet; buffer values not changed
+				EXECUTION_FAILURE - iGlass_imu instance not setup; invalid argument(s); failure to read available data point(s) during execution -> buffer values still changed
 */
-int iGlass_imu::read(int16_t * buf, int num_samples, int sensor) {    
+int iGlass_imu::read(int16_t * buf, int num_samples, int sensor) {   
+	if (imu_setup_flag == 0) {
+		#if DEBUG_MIC
+            Serial.println("iGlass_imu instance has not been setup");
+        #endif
+        return EXECUTION_FAILURE;  
+	} 
 	int samples_read;
 	switch(sensor) {
 		case ACC:
@@ -93,7 +98,7 @@ int iGlass_imu::read(int16_t * buf, int num_samples, int sensor) {
             #if DEBUG_IMU
                 Serial.println("Invalid sensor argument!");
             #endif
-			samples_read = EXECUTION_SUCCESS;
+			samples_read = EXECUTION_FAILURE;
 			break;
 	}
 
@@ -105,22 +110,21 @@ int iGlass_imu::read(int16_t * buf, int num_samples, int sensor) {
 	Input:		buf - ptr to data buffer
 				num_samples - requested number of samples to read; can read up to IMU_FIFO_SAMPLE_CAPACITY samples
 	Ret Val: 	number of accelerometer samples successfully read (num_samples_to_read)
-				EXECUTION_SUCCESS - invalid argument(s); not enough accelerometer samples available yet; buffer values not changed
-
-				EXECUTION_FAILURE - failure to read available data point(s) during execution; buffer values still changed
+				EXECUTION_SUCCESS - not enough accelerometer samples available yet; buffer values not changed
+				EXECUTION_FAILURE - invalid argument(s); failure to read available data point(s) during execution -> buffer values still changed
 */
 int iGlass_imu::read_acc(int16_t * buf, int num_samples) {
 	if (buf == nullptr) {
 		#if DEBUG_IMU
 			Serial.println("Invalid ACC buf argument (nullptr)!");
 		#endif
-		return EXECUTION_SUCCESS;
+		return EXECUTION_FAILURE;
 	}
 	if (num_samples <= 0) {
 		#if DEBUG_IMU
 			Serial.println("Invalid ACC num_samples argument (<= 0)!");
 		#endif
-		return EXECUTION_SUCCESS;
+		return EXECUTION_FAILURE;
 	}
 
     int num_samples_to_read = min(num_samples, IMU_FIFO_SAMPLE_CAPACITY);
@@ -151,22 +155,21 @@ int iGlass_imu::read_acc(int16_t * buf, int num_samples) {
 	Input:		buf - ptr to data buffer
 				num_samples - requested number of samples to read; can read up to IMU_FIFO_SAMPLE_CAPACITY samples
 	Ret Val: 	number of gyroscope samples successfully read (num_samples_to_read)
-				EXECUTION_SUCCESS - invalid argument(s); not enough gyroscope samples available yet; buffer values not changed
-
-				EXECUTION_FAILURE - failure to read available data point(s) during execution; buffer values still changed
+				EXECUTION_SUCCESS - not enough gyroscope samples available yet; buffer values not changed
+				EXECUTION_FAILURE - invalid argument(s); failure to read available data point(s) during execution -> buffer values still changed
 */
 int iGlass_imu::read_gyro(int16_t * buf, int num_samples) {
 	if (buf == nullptr) {
 		#if DEBUG_IMU
 			Serial.println("Invalid GYRO buf argument (nullptr)!");
 		#endif
-		return EXECUTION_SUCCESS;
+		return EXECUTION_FAILURE;
 	}
 	if (num_samples <= 0) {
 		#if DEBUG_IMU
 			Serial.println("Invalid GYRO num_samples argument (<= 0)!");
 		#endif
-		return EXECUTION_SUCCESS;
+		return EXECUTION_FAILURE;
 	}
 
     int num_samples_to_read = min(num_samples, IMU_FIFO_SAMPLE_CAPACITY);
@@ -197,22 +200,21 @@ int iGlass_imu::read_gyro(int16_t * buf, int num_samples) {
 	Input:		buf - ptr to data buffer 
 				num_samples - requested number of samples to read, can only read up to 1 sample
 	Ret Val: 	number of magnetometer samples successfully read (1)
-				EXECUTION_SUCCESS - invalid argument(s); not enough magnetometer sample(s) available yet; buffer values not changed
-
-				EXECUTION_FAILURE - failure to read available data point during execution; buffer values still changed
+				EXECUTION_SUCCESS - not enough magnetometer sample(s) available yet; buffer values not changed
+				EXECUTION_FAILURE - invalid argument(s); failure to read available data point during execution -> buffer values still changed
 */
 int iGlass_imu::read_mag(int16_t * buf, int num_samples) {
 	if (buf == nullptr) {
 		#if DEBUG_IMU
 			Serial.println("Invalid MAG buf argument (nullptr)!");
 		#endif
-		return EXECUTION_SUCCESS;
+		return EXECUTION_FAILURE;
 	}
 	if (num_samples <= 0) {
 		#if DEBUG_IMU
 			Serial.println("Invalid MAG num_samples argument (<= 0)!");
 		#endif
-		return EXECUTION_SUCCESS;
+		return EXECUTION_FAILURE;
 	}
 
 	if (IMU.magnetAvailable()) {
@@ -237,28 +239,33 @@ int iGlass_imu::read_mag(int16_t * buf, int num_samples) {
 				gyro_buf - ptr to gyroscope data buffer
 				num_samples - requested number of samples to read; can read up to IMU_FIFO_SAMPLE_CAPACITY samples
 	Ret Val: 	number of accelerometer-gyroscope samples successfully read (num_samples_to_read)
-				EXECUTION_SUCCESS - invalid argument(s); not enough accelerometer-gyroscope samples available yet; buffer values not changed
-
-				EXECUTION_FAILURE - failure to read available data point(s) during execution; buffer values still changed
+				EXECUTION_SUCCESS - not enough accelerometer-gyroscope samples available yet; buffer values not changed
+				EXECUTION_FAILURE - iGlass_imu instance not setup; invalid argument(s); failure to read available data point(s) during execution -> buffer values still changed
 */
 int iGlass_imu::read_acc_gyro(int16_t * acc_buf, int16_t * gyro_buf, int num_samples) {
+	if (imu_setup_flag == 0) {
+		#if DEBUG_IMU
+            Serial.println("iGlass_imu instance has not been setup");
+        #endif
+        return EXECUTION_FAILURE;  
+	} 
 	if (acc_buf == nullptr) {
 		#if DEBUG_IMU
 			Serial.println("Invalid acc_buf argument (nullptr)!");
 		#endif
-		return EXECUTION_SUCCESS;
+		return EXECUTION_FAILURE;
 	}
 	if (gyro_buf == nullptr) {
 		#if DEBUG_IMU
 			Serial.println("Invalid gyro_buf argument (nullptr)!");
 		#endif
-		return EXECUTION_SUCCESS;
+		return EXECUTION_FAILURE;
 	}
 	if (num_samples <= 0) {
 		#if DEBUG_IMU
 			Serial.println("Invalid ACC GYRO num_samples argument (<= 0)!");
 		#endif
-		return EXECUTION_SUCCESS;
+		return EXECUTION_FAILURE;
 	}
 	
     int num_samples_to_read = min(num_samples, IMU_FIFO_SAMPLE_CAPACITY);
@@ -283,8 +290,15 @@ int iGlass_imu::read_acc_gyro(int16_t * acc_buf, int16_t * gyro_buf, int num_sam
 	Function:	Nothing, placeholder
 	Input:		None
 	Ret Val: 	EXECUTION_SUCCESS
+				EXECUTION_FAILURE - iGlass_imu instance not setup
 */
 int iGlass_imu::write(){
+	if (imu_setup_flag == 0) {
+		#if DEBUG_IMU
+            Serial.println("iGlass_imu instance has not been setup");
+        #endif
+        return EXECUTION_FAILURE;  
+	} 
 	return EXECUTION_SUCCESS;
 }
 
@@ -306,9 +320,15 @@ void iGlass_imu::end() {
 	Function: 	Prints one raw data point from the accelerometer, the gyroscope, and the magentometer, if available
 	Input: 		None
 	Ret Val:	EXECUTION_SUCCESS
-				EXECUTION_FAILURE - unable to read available data
+				EXECUTION_FAILURE - iGlass_imu instance not setup; unable to read available data
 */
 int iGlass_imu::print() {
+	if (imu_setup_flag == 0) {
+		#if DEBUG_IMU
+            Serial.println("iGlass_imu instance has not been setup");
+        #endif
+        return EXECUTION_FAILURE;  
+	} 
 	#if DEBUG_IMU
 		int16_t ax, ay, az, wx, wy, wz, mx, my, mz;
 		bool a_read = false, g_read = false, m_read = false;
