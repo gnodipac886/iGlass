@@ -205,7 +205,7 @@ void iGlass_mic::end(){
 }
 
 /*
-	Function:	Interrupt handler for full PDM internal buffer, reads out data to iGlass_mic's buffer
+	Function:	Callback function for full PDM internal buffer, reads out data to iGlass_mic's buffer
 	Input:		None
 	Ret Val: 	None
 */
